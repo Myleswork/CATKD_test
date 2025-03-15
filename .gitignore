@@ -145,3 +145,4 @@ tmp/
 # output
 wandb/
 output/
+download_cpkts/

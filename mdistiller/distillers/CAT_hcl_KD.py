@@ -75,11 +75,10 @@ def _Normalize(feat,IF_NORMALIZE):
     return feat
 
 def hcl_loss(fstudent, fteacher):
+    # print(fstudent.shape, fteacher.shape)
     # loss_all = 0.0
     loss = 0.0
-    # for fs, ft in zip(fstudent, fteacher):
     n, c, h, w = fstudent.shape
-    # print(fs.shape, ft.shape)
     loss = F.mse_loss(fstudent, fteacher, reduction="mean")
     cnt = 1.0
     tot = 1.0
@@ -88,7 +87,8 @@ def hcl_loss(fstudent, fteacher):
             continue
         tmpfs = F.adaptive_avg_pool2d(fstudent, (l, l))
         tmpft = F.adaptive_avg_pool2d(fteacher, (l, l))
-        cnt /= 2.0
+        # print(tmpfs.shape, tmpft.shape)
+        # cnt /= 2.0
         loss += F.mse_loss(tmpfs, tmpft, reduction="mean") * cnt
         tot += cnt
     loss = loss / tot
@@ -99,6 +99,7 @@ def CAT_loss(CAM_Student, CAM_Teacher, CAM_RESOLUTION, IF_NORMALIZE):
     # CAM_Student = F.adaptive_avg_pool2d(CAM_Student, (CAM_RESOLUTION, CAM_RESOLUTION))
     # CAM_Teacher = F.adaptive_avg_pool2d(CAM_Teacher, (CAM_RESOLUTION, CAM_RESOLUTION))
     loss = hcl_loss(_Normalize(CAM_Student, IF_NORMALIZE), _Normalize(CAM_Teacher, IF_NORMALIZE))
+    # loss = hcl_loss(CAM_Student, CAM_Teacher)
     # loss = hcl_loss(CAM_Student, CAM_Teacher)
     # loss = F.mse_loss(_Normalize(CAM_Student, IF_NORMALIZE), _Normalize(CAM_Teacher, IF_NORMALIZE))
     return loss

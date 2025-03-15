@@ -30,7 +30,7 @@ CAT_KD:
   #True: CAT
   #False: CAT-KD
   onlyCAT: False
-  IF_NORMALIZE: False
+  IF_NORMALIZE: true
 
 # true: convert the normal CNN to our style
 if_test: True
