@@ -1,9 +1,10 @@
 EXPERIMENT:
   NAME: "wrn_40_2_wrn_16_2"
   TAG: "wrn_40_2_wrn_16_2"
-  PROJECT: "wrn_40_2_wrn_16_2"
+  PROJECT: "cifar100_baselines_CAT"
 DISTILLER:
-  TYPE: "CAT_KD"
+  # TYPE: "CAT_KD"
+  TYPE: "CAT_hcl_KD"
   TEACHER: "wrn_40_2"
   STUDENT: "wrn_16_2"
 SOLVER:

@@ -1,9 +1,10 @@
 EXPERIMENT:
   NAME: "res56_res20"
   TAG: "res56_res20"
-  PROJECT: "res56_res20"
+  PROJECT: "cifar100_baselines_CAT"
 DISTILLER:
-  TYPE: "CAT_KD"
+  # TYPE: "CAT_KD"
+  TYPE: "CAT_hcl_KD"
   TEACHER: "resnet56"
   STUDENT: "resnet20"
 SOLVER:

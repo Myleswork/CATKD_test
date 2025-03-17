@@ -40,6 +40,8 @@ CFG.CAT_KD.LOSS.CAM_RESOLUTION = 2
 CFG.CAT_KD.teacher_dir = None
 CFG.CAT_KD.student_dir = None
 
+CFG.CAT_KD.IF_ZIP = False
+
 # Experiment
 CFG.EXPERIMENT = CN()
 CFG.EXPERIMENT.PROJECT = "distill"

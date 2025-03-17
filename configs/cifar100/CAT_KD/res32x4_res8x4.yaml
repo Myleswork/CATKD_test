@@ -1,5 +1,5 @@
 EXPERIMENT:
-  NAME: "resnet32x4,resnet8x4,hcl"
+  NAME: "resnet32x4,resnet8x4"
   TAG: "resnet32x4,resnet8x4"
   PROJECT: "cifar100_baselines_CAT"
 DISTILLER:
@@ -18,6 +18,7 @@ SOLVER:
   TYPE: "SGD"
 
 LOG:
+  # WANDB: false
   WANDB: true
   
 CAT_KD:
@@ -30,7 +31,7 @@ CAT_KD:
   #True: CAT
   #False: CAT-KD
   onlyCAT: False
-  IF_NORMALIZE: False
+  IF_NORMALIZE: True
 
 # true: convert the normal CNN to our style
 if_test: True

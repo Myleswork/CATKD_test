@@ -1,9 +1,10 @@
 EXPERIMENT:
   NAME: "res32x4_shuv2"
   TAG: "res32x4_shuv2"
-  PROJECT: "res32x4_shuv2"
+  PROJECT: "cifar100_baselines_CAT"
 DISTILLER:
-  TYPE: "CAT_KD"
+  # TYPE: "CAT_KD"
+  TYPE: "CAT_hcl_KD"
   TEACHER: "resnet32x4"
   STUDENT: "ShuffleV2"
 SOLVER:

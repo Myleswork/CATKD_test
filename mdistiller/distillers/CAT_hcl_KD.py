@@ -21,6 +21,7 @@ class CAT_hcl_KD(Distiller):
         # 0: select CAMs with top x predicted classes
         # 1: select CAMs with the lowest x predicted classes
         self.Strategy = cfg.CAT_KD.Strategy
+        self.if_zip = cfg.CAT_KD.IF_ZIP
         
     def forward_train(self, image, target, **kwargs):
         logits_student, feature_student = self.student(image)
@@ -74,12 +75,14 @@ def _Normalize(feat,IF_NORMALIZE):
         feat = F.normalize(feat,dim=(2,3))
     return feat
 
-def hcl_loss(fstudent, fteacher):
+def hcl_zip_loss(fstudent, fteacher):
     loss_all = 0.0
+    print(fstudent.shape, fteacher.shape)
     for fs, ft in zip(fstudent, fteacher):
         c, h, w = fs.shape
-        fs = F.normalize(fs)
-        ft = F.normalize(ft)
+        # print(fs.shape, ft.shape)
+        fs = F.normalize(fs, dim=(1,2)) #h和w上作归一化
+        ft = F.normalize(ft, dim=(1,2))
         loss = F.mse_loss(fs, ft, reduction="mean")
         cnt = 1.0
         tot = 1.0
@@ -95,11 +98,33 @@ def hcl_loss(fstudent, fteacher):
         loss_all = loss_all + loss
     return loss_all
 
+def hcl_loss(fstudent, fteacher):
+    loss_all = 0.0
+    # print(fstudent.shape, fteacher.shape)
+    for fs, ft in zip(fstudent, fteacher):
+        c, h, w = fs.shape
+        # print(fs.shape, ft.shape)
+        # fs = F.normalize(fs, dim=(1,2)) #h和w上作归一化
+        # ft = F.normalize(ft, dim=(1,2))
+        loss = F.mse_loss(fs, ft, reduction="mean")
+        cnt = 1.0
+        tot = 1.0
+        for l in [4, 2, 1]:
+            if l >= h:
+                continue
+            tmpfs = F.adaptive_avg_pool2d(fs, (l, l))
+            tmpft = F.adaptive_avg_pool2d(ft, (l, l))
+            cnt /= 2.0
+            loss += F.mse_loss(tmpfs, tmpft, reduction="mean") * cnt
+            tot += cnt
+        # loss = loss / tot
+        # loss_all = loss_all + loss
+    return loss
+
 def CAT_loss(CAM_Student, CAM_Teacher, CAM_RESOLUTION, IF_NORMALIZE):   
-    # CAM_Student = F.adaptive_avg_pool2d(CAM_Student, (CAM_RESOLUTION, CAM_RESOLUTION))
-    # CAM_Teacher = F.adaptive_avg_pool2d(CAM_Teacher, (CAM_RESOLUTION, CAM_RESOLUTION))
+    CAM_Student = F.adaptive_avg_pool2d(CAM_Student, (CAM_RESOLUTION, CAM_RESOLUTION))
+    CAM_Teacher = F.adaptive_avg_pool2d(CAM_Teacher, (CAM_RESOLUTION, CAM_RESOLUTION))
     loss = hcl_loss(_Normalize(CAM_Student, IF_NORMALIZE), _Normalize(CAM_Teacher, IF_NORMALIZE))
-    # loss = hcl_loss(CAM_Student, CAM_Teacher)
     # loss = hcl_loss(CAM_Student, CAM_Teacher)
     # loss = F.mse_loss(_Normalize(CAM_Student, IF_NORMALIZE), _Normalize(CAM_Teacher, IF_NORMALIZE))
     return loss

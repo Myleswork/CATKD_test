@@ -1,9 +1,10 @@
 EXPERIMENT:
   NAME: "vgg13_mv2"
   TAG: "vgg13_mv2"
-  PROJECT: "vgg13_mv2"
+  PROJECT: "cifar100_baselines_CAT"
 DISTILLER:
-  TYPE: "CAT_KD"
+  # TYPE: "CAT_KD"
+  TYPE: "CAT_hcl_KD"
   TEACHER: "vgg13"
   STUDENT: "MobileNetV2"
 SOLVER:
