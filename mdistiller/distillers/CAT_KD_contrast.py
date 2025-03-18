@@ -3,10 +3,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 from ._base import Distiller
     
-class CAT_hcl_KD(Distiller):
+class CAT_TEST_KD(Distiller):
 
     def __init__(self, student, teacher, cfg):
-        super(CAT_hcl_KD, self).__init__(student, teacher)
+        super(CAT_TEST_KD, self).__init__(student, teacher)
         self.ce_loss_weight = cfg.CAT_KD.LOSS.CE_WEIGHT
         self.CAT_loss_weight = cfg.CAT_KD.LOSS.CAT_loss_weight
         self.onlyCAT = cfg.CAT_KD.onlyCAT
@@ -21,7 +21,7 @@ class CAT_hcl_KD(Distiller):
         # 0: select CAMs with top x predicted classes
         # 1: select CAMs with the lowest x predicted classes
         self.Strategy = cfg.CAT_KD.Strategy
-        self.if_zip = cfg.CAT_KD.IF_ZIP
+        self.CONTRAST_loss_weight = cfg.CAT_KD.CONTRAST_loss_weight
         
     def forward_train(self, image, target, **kwargs):
         logits_student, feature_student = self.student(image)
@@ -34,7 +34,7 @@ class CAT_hcl_KD(Distiller):
         if self.IF_BINARIZE:
             n,c,h,w = tea.shape
             threshold = torch.norm(tea, dim=(2,3), keepdim=True, p=1)/(h*w)
-            tea = tea - threshold
+            tea =tea - threshold
             tea = self.relu(tea).bool() * torch.ones_like(tea)
         
         
@@ -55,16 +55,21 @@ class CAT_hcl_KD(Distiller):
         loss_feat = self.CAT_loss_weight * CAT_loss(
             stu, tea, self.CAM_RESOLUTION, self.IF_NORMALIZE
         )
+
+        #contrastive loss
+        loss_contrastive = self.CONTRAST_loss_weight * contrastive_loss(stu, tea, self.IF_NORMALIZE)
          
         if self.onlyCAT is False:
             loss_ce = self.ce_loss_weight * F.cross_entropy(logits_student, target)
             losses_dict = {
                 "loss_CE": loss_ce,
                 "loss_CAT": loss_feat,
+                "loss_contrastive": loss_contrastive,
             }
         else:
             losses_dict = {
                 "loss_CAT": loss_feat,
+                "loss_contrastive": loss_contrastive,
             }
 
         return logits_student, losses_dict
@@ -75,58 +80,29 @@ def _Normalize(feat,IF_NORMALIZE):
         feat = F.normalize(feat,dim=(2,3))
     return feat
 
-def hcl_zip_loss(fstudent, fteacher):
-    loss_all = 0.0
-    print(fstudent.shape, fteacher.shape)
-    for fs, ft in zip(fstudent, fteacher):
-        c, h, w = fs.shape
-        # print(fs.shape, ft.shape)
-        fs = F.normalize(fs, dim=(1,2)) #h和w上作归一化
-        ft = F.normalize(ft, dim=(1,2))
-        loss = F.mse_loss(fs, ft, reduction="mean")
-        cnt = 1.0
-        tot = 1.0
-        for l in [4, 2, 1]:
-            if l >= h:
-                continue
-            tmpfs = F.adaptive_avg_pool2d(fs, (l, l))
-            tmpft = F.adaptive_avg_pool2d(ft, (l, l))
-            cnt /= 2.0
-            loss += F.mse_loss(tmpfs, tmpft, reduction="mean") * cnt
-            tot += cnt
-        loss = loss / tot
-        loss_all = loss_all + loss
-    return loss_all
+def contrastive_loss(Student, Teacher, IF_NORMALIZE=True, temperature=0.5):
+    # 计算相似度
+    n, c, h, w = Student.shape
+    student_flat = Student.view(n, -1)  # (N, C*H*W)
+    teacher_flat = Teacher.view(n, -1)  # (N, C*H*W)
 
-def hcl_loss(fstudent, fteacher):
-    loss_all = 0.0
-    # print(fstudent.shape, fteacher.shape)
-    for fs, ft in zip(fstudent, fteacher):
-        c, h, w = fs.shape
-        # print(fs.shape, ft.shape)
-        # fs = F.normalize(fs, dim=(1,2)) #h和w上作归一化
-        # ft = F.normalize(ft, dim=(1,2))
-        loss = F.mse_loss(fs, ft, reduction="mean")
-        cnt = 1.0
-        tot = 1.0
-        for l in [4, 2, 1]:
-            if l >= h:
-                continue
-            tmpfs = F.adaptive_avg_pool2d(fs, (l, l))
-            tmpft = F.adaptive_avg_pool2d(ft, (l, l))
-            cnt /= 2.0
-            loss += F.mse_loss(tmpfs, tmpft, reduction="mean") * cnt
-            tot += cnt
-        loss = loss / tot
-        loss_all = loss_all + loss
+    # student_norm = F.normalize(student_flat, p=2, dim=1)
+    # teacher_norm = F.normalize(teacher_flat, p=2, dim=1)
+    # sim_matrix = torch.mm(student_norm, teacher_norm.t())
+    sim_matrix = F.cosine_similarity(student_flat.unsqueeze(1), teacher_flat.unsqueeze(0), dim=-1)
+
+
+    # 对角线应当最大
+    labels = torch.arange(n).cuda()
+    # loss = F.cross_entropy(sim_matrix / temperature, labels)
+    loss = F.cross_entropy(F.log_softmax(sim_matrix / temperature, dim=-1), labels)
     return loss
 
-def CAT_loss(CAM_Student, CAM_Teacher, CAM_RESOLUTION, IF_NORMALIZE):   
+
+def CAT_loss(CAM_Student, CAM_Teacher, CAM_RESOLUTION, IF_NORMALIZE): 
     CAM_Student = F.adaptive_avg_pool2d(CAM_Student, (CAM_RESOLUTION, CAM_RESOLUTION))
     CAM_Teacher = F.adaptive_avg_pool2d(CAM_Teacher, (CAM_RESOLUTION, CAM_RESOLUTION))
-    loss = hcl_loss(_Normalize(CAM_Student, IF_NORMALIZE), _Normalize(CAM_Teacher, IF_NORMALIZE))
-    # loss = hcl_loss(CAM_Student, CAM_Teacher)
-    # loss = F.mse_loss(_Normalize(CAM_Student, IF_NORMALIZE), _Normalize(CAM_Teacher, IF_NORMALIZE))
+    loss = F.mse_loss(_Normalize(CAM_Student, IF_NORMALIZE), _Normalize(CAM_Teacher, IF_NORMALIZE))
     return loss
     
 

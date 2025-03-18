@@ -39,8 +39,7 @@ CFG.CAT_KD.LOSS.CAM_RESOLUTION = 2
 
 CFG.CAT_KD.teacher_dir = None
 CFG.CAT_KD.student_dir = None
-
-CFG.CAT_KD.IF_ZIP = False
+CFG.CAT_KD.CONTRAST_loss_weight = 15.0
 
 # Experiment
 CFG.EXPERIMENT = CN()

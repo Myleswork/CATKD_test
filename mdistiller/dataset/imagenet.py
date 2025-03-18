@@ -3,9 +3,11 @@ import numpy as np
 import torch
 from torchvision.datasets import ImageFolder
 import torchvision.transforms as transforms
+from .autoaugment import ImageNetPolicy
+from .cutout import Cutout
 
 
-data_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../data/imagenet')
+data_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../data/imagenet_1k')
 
 
 class ImageNet(ImageFolder):
@@ -65,16 +67,38 @@ class ImageNetInstanceSample(ImageNet):
         else:
             return img, target, index
 
-def get_imagenet_train_transform(mean, std):
+def get_imagenet_train_transform(mean, std, auto_aug=False, cut_out=False):
     normalize = transforms.Normalize(mean=mean, std=std)
-    train_transform = transforms.Compose(
-        [
-            transforms.RandomResizedCrop(224),
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
-            normalize,
-        ]
-    )
+    if(auto_aug == True and cut_out == False):
+        train_transform = transforms.Compose(
+            [
+                transforms.RandomResizedCrop(224),
+                transforms.RandomHorizontalFlip(),
+                ImageNetPolicy(),
+                transforms.ToTensor(),
+                normalize,
+            ]
+        )
+    elif(auto_aug == True and cut_out == True):
+        train_transform = transforms.Compose(
+            [
+                transforms.RandomResizedCrop(224),
+                transforms.RandomHorizontalFlip(),
+                ImageNetPolicy(),
+                Cutout(n_holes=1, length=16),
+                transforms.ToTensor(),
+                normalize,
+            ]
+        )
+    else:
+        train_transform = transforms.Compose(
+            [
+                transforms.RandomResizedCrop(224),
+                transforms.RandomHorizontalFlip(),
+                transforms.ToTensor(),
+                normalize,
+            ]
+        )
     return train_transform
 
 def get_imagenet_test_transform(mean, std):
@@ -90,8 +114,8 @@ def get_imagenet_test_transform(mean, std):
     return test_transform
 
 def get_imagenet_dataloaders(batch_size, val_batch_size, num_workers,
-    mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]):
-    train_transform = get_imagenet_train_transform(mean, std)
+    mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], auto_aug=False, cut_out=False):
+    train_transform = get_imagenet_train_transform(mean, std, auto_aug, cut_out)
     train_folder = os.path.join(data_folder, 'train')
     train_set = ImageNet(train_folder, transform=train_transform)
     num_data = len(train_set)

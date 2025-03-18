@@ -323,19 +323,21 @@ class ResNet_test(nn.Module):
         x, f2_pre = self.layer2(x)  # 16x16
         f2 = x
             
-        x, f3_pre = self.layer3(x)  # 8x8
+        x, f3_pre = self.layer3(x)  # 8x8  
         
-        x = self.conv_test(x)
-        f3 = x
+        #///////
+        x = self.conv_test(x)  #[batch_size, num_classes,8,8]
+        f3 = x    #f3就是cams
         
         x = self.avgpool(x)
         avg = x.reshape(x.size(0), -1)
         out = avg
+        #///////
 
         feats = {}
-        feats["feats"] = [f0, f1, f2, f3]
-        feats["preact_feats"] = [f0, f1_pre, f2_pre, f3_pre]
-        feats["pooled_feat"] = avg
+        feats["feats"] = [f0, f1, f2, f3]     #激活后的feature_map
+        feats["preact_feats"] = [f0, f1_pre, f2_pre, f3_pre]  #未激活的feature_map
+        feats["pooled_feat"] = avg  #全局池化后的结果，用于最终分类，一般用于连接全连接层
 
         return out, feats
 

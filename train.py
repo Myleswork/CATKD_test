@@ -42,7 +42,6 @@ def main(cfg, resume, opts):
             cfg.LOG.WANDB = False
 
     # cfg & loggers
-    show_cfg(cfg)
     # init dataloader & models
     train_loader, val_loader, num_data, num_classes = get_dataset(cfg)
 

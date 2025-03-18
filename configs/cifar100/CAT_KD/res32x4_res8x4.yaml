@@ -1,10 +1,11 @@
 EXPERIMENT:
-  NAME: "resnet32x4,resnet8x4"
+  NAME: "resnet32x4,resnet8x4,CONTRAST"
   TAG: "resnet32x4,resnet8x4"
   PROJECT: "cifar100_baselines_CAT"
 DISTILLER:
   # TYPE: "CAT_KD"
-  TYPE: "CAT_hcl_KD"
+  # TYPE: "CAT_hcl_KD"
+  TYPE: "CAT_test_KD"
   TEACHER: "resnet32x4"
   STUDENT: "resnet8x4"
 SOLVER:
@@ -31,7 +32,7 @@ CAT_KD:
   #True: CAT
   #False: CAT-KD
   onlyCAT: False
-  IF_NORMALIZE: True
+  IF_NORMALIZE: False
 
 # true: convert the normal CNN to our style
 if_test: True

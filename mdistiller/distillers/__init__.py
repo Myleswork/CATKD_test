@@ -14,6 +14,7 @@ from .ReviewKD import ReviewKD
 from .DKD import DKD
 from .CAT_KD import CAT_KD
 from .CAT_hcl_KD import CAT_hcl_KD
+from .CAT_KD_contrast import CAT_TEST_KD
 from .transfer import transfer
 
 
@@ -34,5 +35,6 @@ distiller_dict = {
     "DKD": DKD,
     "CAT_KD": CAT_KD,
     "CAT_hcl_KD": CAT_hcl_KD,
+    "CAT_test_KD": CAT_TEST_KD,
     'transfer' :transfer,
 }

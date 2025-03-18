@@ -39,6 +39,8 @@ def get_dataset(cfg):
                 batch_size=cfg.SOLVER.BATCH_SIZE,
                 val_batch_size=cfg.DATASET.TEST.BATCH_SIZE,
                 num_workers=cfg.DATASET.NUM_WORKERS,
+                auto_aug = cfg.DATASET.AUTO_AUG,
+                cut_out = cfg.DATASET.CUT_OUT,
             )
         num_classes = 1000
     elif cfg.DATASET.TYPE == "tiny_imagenet":
