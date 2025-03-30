@@ -1,9 +1,9 @@
 EXPERIMENT:
-  NAME: "resnet32x4,resnet8x4,baseline"
+  NAME: "resnet32x4,resnet8x4,test"
   TAG: "resnet32x4,resnet8x4"
   PROJECT: "cifar100_baselines_CAT"
 DISTILLER:
-  TYPE: "CAT_KD"
+  TYPE: "CAT_test_KD"
   TEACHER: "resnet32x4"
   STUDENT: "resnet8x4"
 SOLVER:
@@ -23,7 +23,8 @@ LOG:
 CAT_KD:
   LOSS:
     # β
-    CAT_loss_weight: 15.
+    CAT_loss_weight: 0.
+    DE_LOSS_WEIGHT: 1.5
     # the resolution of the transferred CAMs after the average pooling function
     CAM_RESOLUTION: 2
     CE_WEIGHT: 1.

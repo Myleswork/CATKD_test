@@ -15,5 +15,8 @@ SOLVER:
   WEIGHT_DECAY: 0.0005
   MOMENTUM: 0.9
   TYPE: "SGD"
+LOG:
+  WANDB: false
+  # WANDB: true
 
 device: 0

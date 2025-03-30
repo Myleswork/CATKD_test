@@ -14,7 +14,7 @@ from .ReviewKD import ReviewKD
 from .DKD import DKD
 from .CAT_KD import CAT_KD
 from .CAT_hcl_KD import CAT_hcl_KD
-from .CAT_KD_contrast import CAT_TEST_KD
+from .CAT_decoupled_KD import CAT_TEST_KD
 from .transfer import transfer
 
 
