@@ -119,7 +119,11 @@ def main(cfg, resume, opts):
         if cfg.DISTILLER.TYPE == "SIMKD":
             student_s_n = model_teacher.get_stage_channels()[-1]
             teacher_s_n = model_student.get_stage_channels()[-1]
-            teacher_cls = model_teacher.fc
+            # print(cfg.DISTILLER.TEACHER[0])
+            if cfg.DISTILLER.TEACHER[0] == 'r' or cfg.DISTILLER.TEACHER[0] == 'R' or cfg.DISTILLER.TEACHER[0] == 'w':
+                teacher_cls = model_teacher.fc
+            elif cfg.DISTILLER.TEACHER[0] == 'v':
+                teacher_cls = model_teacher.classifier
             distiller = distiller_dict[cfg.DISTILLER.TYPE](
                 model_student, model_teacher, cfg, student_s_n, teacher_s_n, teacher_cls
             )
