@@ -9,7 +9,7 @@ __pycache__/
 *.so
 
 # Distribution / packaging
-download_ckpts/
+download_ckpts
 .Python
 build/
 develop-eggs/
