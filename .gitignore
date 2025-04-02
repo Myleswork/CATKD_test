@@ -9,6 +9,7 @@ __pycache__/
 *.so
 
 # Distribution / packaging
+download_ckpts/
 .Python
 build/
 develop-eggs/
@@ -145,4 +146,3 @@ tmp/
 # output
 wandb/
 output/
-download_cpkts/
