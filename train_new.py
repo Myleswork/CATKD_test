@@ -85,9 +85,9 @@ def main(cfg, resume, opts):
     else:
         print(log_msg("Loading teacher model", "INFO"))
         if cfg.DATASET.TYPE == "imagenet":
-            model_teacher = model_dict_type[cfg.DISTILLER.TEACHER](pretrained=True)
+            model_teacher = model_dict_type[cfg.DISTILLER.TEACHER](pretrained=True)  #imagenet有预训练权重，所以有pretrained
             model_student = model_dict_type[cfg.DISTILLER.STUDENT](pretrained=False)
-        else:
+        else:  #cifar没有预训练权重，所以没有pretrained
             if cfg.CAT_KD.teacher_dir is not None:
                 print('---------------custom teacher------------------')
                 net = model_dict_type[cfg.DISTILLER.TEACHER][0]
@@ -100,7 +100,7 @@ def main(cfg, resume, opts):
                 pretrain_model_path is not None
             ), "no pretrain model for teacher {}".format(cfg.DISTILLER.TEACHER)
             model_teacher = net(num_classes=num_classes)
-            temp = load_checkpoint(pretrain_model_path)["model"]
+            temp = load_checkpoint(pretrain_model_path)["model"] #加载模型
             
             weights_dict = {}
             for k, v in temp.items():
@@ -115,39 +115,46 @@ def main(cfg, resume, opts):
             model_student = model_dict_type[cfg.DISTILLER.STUDENT][0](
                 num_classes=num_classes
             )
-            print(model_teacher.get_stage_channels())
+            #simkd
+        if cfg.DISTILLER.TYPE == "SIMKD":
+            student_s_n = model_teacher.get_stage_channels()[-1]
+            teacher_s_n = model_student.get_stage_channels()[-1]
+            teacher_cls = model_teacher.fc
+            distiller = distiller_dict[cfg.DISTILLER.TYPE](
+                model_student, model_teacher, cfg, student_s_n, teacher_s_n, teacher_cls
+            )
             
     # convert teacher's structure
-        if cfg.if_test == True:
+        # if cfg.if_test == True:
             
-            if cfg.DISTILLER.TEACHER[-1] != 't':
-                print('converting teacher\'s structure')
-                if cfg.DATASET.TYPE == "imagenet":
-                    tnet_test = model_dict_type[cfg.DISTILLER.TEACHER+'_test'](pretrained=False)
-                else:
-                    tnet_test = model_dict_type[cfg.DISTILLER.TEACHER+'_test'][0](num_classes=num_classes)
-                model_dict = tnet_test.state_dict()
+        #     if cfg.DISTILLER.TEACHER[-1] != 't':
+        #         print('converting teacher\'s structure')
+        #         if cfg.DATASET.TYPE == "imagenet":
+        #             tnet_test = model_dict_type[cfg.DISTILLER.TEACHER+'_test'](pretrained=False)
+        #         else:
+        #             tnet_test = model_dict_type[cfg.DISTILLER.TEACHER+'_test'][0](num_classes=num_classes)
+        #         model_dict = tnet_test.state_dict()
 
-                pretrained_dict = {k: v for k, v in model_teacher.state_dict().items() if k in model_dict}                
-                if cfg.DATASET.TYPE == "imagenet":
-                    pretrained_dict['conv_test.weight']=model_teacher.state_dict()['fc.weight'].view(model_teacher.fc.out_features,model_teacher.fc.in_features,1,1)
-                elif cfg.DISTILLER.TEACHER == 'ResNet50' or cfg.DISTILLER.TEACHER == 'WideResNet28x10_cifar100':
-                    pretrained_dict['conv_test.weight']=model_teacher.state_dict()['linear.weight'].view(model_teacher.linear.out_features,model_teacher.linear.in_features,1,1)
-                elif cfg.DISTILLER.TEACHER == 'vgg13':
-                    pretrained_dict['conv_test.weight']=model_teacher.state_dict()['classifier.weight'].view(model_teacher.classifier.out_features,model_teacher.classifier.in_features,1,1)
-                else:
-                    pretrained_dict['conv_test.weight']=model_teacher.state_dict()['fc.weight'].view(model_teacher.fc.out_features,model_teacher.fc.in_features,1,1)                
-                model_dict.update(pretrained_dict) 
-                tnet_test.load_state_dict(model_dict)
-                model_teacher=tnet_test
+        #         pretrained_dict = {k: v for k, v in model_teacher.state_dict().items() if k in model_dict}                
+        #         if cfg.DATASET.TYPE == "imagenet":
+        #             pretrained_dict['conv_test.weight']=model_teacher.state_dict()['fc.weight'].view(model_teacher.fc.out_features,model_teacher.fc.in_features,1,1)
+        #         elif cfg.DISTILLER.TEACHER == 'ResNet50' or cfg.DISTILLER.TEACHER == 'WideResNet28x10_cifar100':
+        #             pretrained_dict['conv_test.weight']=model_teacher.state_dict()['linear.weight'].view(model_teacher.linear.out_features,model_teacher.linear.in_features,1,1)
+        #         elif cfg.DISTILLER.TEACHER == 'vgg13':
+        #             pretrained_dict['conv_test.weight']=model_teacher.state_dict()['classifier.weight'].view(model_teacher.classifier.out_features,model_teacher.classifier.in_features,1,1)
+        #         else:
+        #             pretrained_dict['conv_test.weight']=model_teacher.state_dict()['fc.weight'].view(model_teacher.fc.out_features,model_teacher.fc.in_features,1,1)                
+        #         model_dict.update(pretrained_dict) 
+        #         tnet_test.load_state_dict(model_dict)
+        #         model_teacher=tnet_test
                 
-            if cfg.DATASET.TYPE == "imagenet":
-                model_student = model_dict_type[cfg.DISTILLER.STUDENT+'_test'](pretrained=False)
-            else:
-                model_student = model_dict_type[cfg.DISTILLER.STUDENT+'_test'][0](num_classes=num_classes)
+        #     if cfg.DATASET.TYPE == "imagenet":
+        #         model_student = model_dict_type[cfg.DISTILLER.STUDENT+'_test'](pretrained=False)
+        #     else:
+        #         model_student = model_dict_type[cfg.DISTILLER.STUDENT+'_test'][0](num_classes=num_classes)
                 
                 
-        if cfg.DISTILLER.TYPE == "CRD":
+        elif cfg.DISTILLER.TYPE == "CRD":
             distiller = distiller_dict[cfg.DISTILLER.TYPE](
                 model_student, model_teacher, cfg, num_data
             )

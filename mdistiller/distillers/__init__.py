@@ -16,6 +16,7 @@ from .CAT_KD import CAT_KD
 from .CAT_hcl_KD import CAT_hcl_KD
 from .CAT_decoupled_KD import CAT_TEST_KD
 from .transfer import transfer
+from .SIMkd_test import SimKD
 
 
 distiller_dict = {
@@ -36,5 +37,6 @@ distiller_dict = {
     "CAT_KD": CAT_KD,
     "CAT_hcl_KD": CAT_hcl_KD,
     "CAT_test_KD": CAT_TEST_KD,
+    "SIMKD": SimKD,
     'transfer' :transfer,
 }

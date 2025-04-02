@@ -72,6 +72,7 @@ class DKD(Distiller):
 
     def forward_train(self, image, target, **kwargs):
         logits_student, feature_student = self.student(image)
+        # print(feature_student.keys())
         with torch.no_grad():
             logits_teacher, feature_teacher = self.teacher(image)
 

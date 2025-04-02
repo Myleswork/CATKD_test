@@ -24,7 +24,7 @@ from .ShuffleNetv1 import ShuffleV1, ShuffleV1_test
 from .ShuffleNetv2 import ShuffleV2, ShuffleV2_test
 cifar100_model_prefix = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), 
-    "../../../model/download_ckpts/cifar_teachers/"
+    "../../../download_ckpts/cifar_teachers/"
 )
 cifar_model_dict = {
     

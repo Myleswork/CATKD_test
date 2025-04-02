@@ -32,7 +32,7 @@ class Distiller(nn.Module):
         raise NotImplementedError()
 
     def forward_test(self, image):
-        return self.student(image)[0]
+        return self.student(image)[0] #在这个框架下，这应该是一个分类器的输出，也就是"feats"
 
     def forward(self, **kwargs):
         if self.training:
