@@ -15,6 +15,9 @@ from .resnet import (
     resnet8x4_test,
     resnet32x4,
     resnet32x4_test,
+    resnet38x2,
+    resnet110x2,
+    resnet116
 )
 from .resnetv2 import ResNet50, ResNet18, ResNet50_test
 from .wrn import wrn_16_1, wrn_16_2, wrn_16_2_test, wrn_40_1, wrn_40_1_test, wrn_40_2, wrn_40_2_test
@@ -61,6 +64,10 @@ cifar_model_dict = {
         ResNet50_test,
         None
     ),
+    "ResNet110x2": (
+        resnet110x2,
+        cifar100_model_prefix + "resnet110x2_vanilla/resnet110x2_best.pth",
+    ),
     "wrn_40_2": (
         wrn_40_2,
         cifar100_model_prefix + "wrn_40_2_vanilla/ckpt_epoch_240.pth",
@@ -68,6 +75,10 @@ cifar_model_dict = {
     "wrn_40_2_test": (
         wrn_40_2_test,
         None
+    ),
+    "wrn_40_2_resnet": (
+        resnet38x2,
+        cifar100_model_prefix + "resnet38x2_vanilla/resnet38x2_best.pth",
     ),
     "vgg13": (vgg13_bn, cifar100_model_prefix + "vgg13_vanilla/ckpt_epoch_240.pth"),
     "vgg13_test": (vgg13_bn_test,None),
@@ -83,6 +94,8 @@ cifar_model_dict = {
     "resnet8x4": (resnet8x4, None),
     "resnet8x4_test": (resnet8x4_test, None),
     "ResNet18": (ResNet18, None),
+    "ResNet110":(resnet110, None),
+    "ResNet116":(resnet116, None),
     "wrn_16_1": (wrn_16_1, None),
     "wrn_16_2": (wrn_16_2, None),
     "wrn_16_2_test": (wrn_16_2_test, None),

@@ -16,7 +16,7 @@ from .CAT_KD import CAT_KD
 from .CAT_hcl_KD import CAT_hcl_KD
 from .CAT_decoupled_KD import CAT_TEST_KD
 from .transfer import transfer
-from .SIMkd_test import SimKD
+from .SIMkd import SimKD
 
 
 distiller_dict = {

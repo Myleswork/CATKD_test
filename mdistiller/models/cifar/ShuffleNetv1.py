@@ -65,17 +65,17 @@ class Bottleneck(nn.Module):
 class ShuffleNet(nn.Module):
     def __init__(self, cfg, num_classes=10):
         super(ShuffleNet, self).__init__()
-        out_planes = cfg["out_planes"]
+        self.out_planes = cfg["out_planes"]
         num_blocks = cfg["num_blocks"]
         groups = cfg["groups"]
 
         self.conv1 = nn.Conv2d(3, 24, kernel_size=1, bias=False)
         self.bn1 = nn.BatchNorm2d(24)
         self.in_planes = 24
-        self.layer1 = self._make_layer(out_planes[0], num_blocks[0], groups)
-        self.layer2 = self._make_layer(out_planes[1], num_blocks[1], groups)
-        self.layer3 = self._make_layer(out_planes[2], num_blocks[2], groups)
-        self.linear = nn.Linear(out_planes[2], num_classes)
+        self.layer1 = self._make_layer(self.out_planes[0], num_blocks[0], groups)
+        self.layer2 = self._make_layer(self.out_planes[1], num_blocks[1], groups)
+        self.layer3 = self._make_layer(self.out_planes[2], num_blocks[2], groups)
+        self.linear = nn.Linear(self.out_planes[2], num_classes)
         # self.stage_channels = out_channels
 
     def _make_layer(self, out_planes, num_blocks, groups):
@@ -108,6 +108,9 @@ class ShuffleNet(nn.Module):
         raise NotImplementedError(
             'ShuffleNet currently is not supported for "Overhaul" teacher'
         )
+    
+    def get_stage_channels(self):
+        return self.out_planes
 
     def forward(
         self,

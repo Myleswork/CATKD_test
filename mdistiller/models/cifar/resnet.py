@@ -373,8 +373,13 @@ def resnet56_test(**kwargs):
 
 def resnet110(**kwargs):
     return ResNet(110, [16, 16, 32, 64], "basicblock", **kwargs)
+def resnet110x2(**kwargs):
+    return ResNet(110, [16, 32, 64, 128], 'basicblock', **kwargs)
 def resnet110_test(**kwargs):
     return ResNet_test(110, [16, 16, 32, 64], "basicblock", **kwargs)
+
+def resnet116(**kwargs):
+    return ResNet(116, [16, 16, 32, 64], 'basicblock', **kwargs)
 
 
 def resnet8x4(**kwargs):
@@ -387,6 +392,8 @@ def resnet32x4(**kwargs):
     return ResNet(32, [32, 64, 128, 256], "basicblock", **kwargs)
 def resnet32x4_test(**kwargs):
     return ResNet_test(32, [32, 64, 128, 256], "basicblock", **kwargs)
+def resnet38x2(**kwargs):
+    return ResNet(38, [16, 32, 64, 128], 'basicblock', **kwargs)
 
 if __name__ == "__main__":
     import torch

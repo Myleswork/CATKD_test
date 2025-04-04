@@ -125,6 +125,8 @@ def main(cfg, resume, opts):
                 teacher_cls = model_teacher.fc
             elif cfg.DISTILLER.TEACHER[0] == 'v':
                 teacher_cls = model_teacher.classifier
+            else:
+                teacher_cls = model_teacher.linear
             distiller = distiller_dict[cfg.DISTILLER.TYPE](
                 model_student, model_teacher, cfg, student_s_n, teacher_s_n, teacher_cls
             )
