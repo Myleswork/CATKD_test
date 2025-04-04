@@ -1,11 +1,11 @@
 EXPERIMENT:
-  NAME: "ResNet110x2,resnet110"
-  TAG: "resnet32x4,resnet110,titanxp"
+  NAME: "ResNet110x2,resnet116"
+  TAG: "resnet32x4,resnet116,titanxp"
   PROJECT: "cifar100_baselines_simkd"
 DISTILLER:
   TYPE: "SIMKD"
   TEACHER: "ResNet110x2"
-  STUDENT: "ResNet110"
+  STUDENT: "ResNet116"
 SOLVER:
   BATCH_SIZE: 64
   EPOCHS: 240
