@@ -10,6 +10,7 @@ class SimKD(Distiller):
         self.feat_s_dim = s_n
         self.feat_t_dim = t_n
         self.t_cls = t_cls
+        self.SIM_weight = cfg.SIMKD.LOSS.FEAT_WEIGHT
         self.factor = cfg.SIMKD.FACTOR
         
         self.transfer = nn.Sequential(
@@ -57,7 +58,7 @@ class SimKD(Distiller):
         pred_feat_s = self.t_cls(temp_feat) #reuse teacher cls head
         
         loss_mse = nn.MSELoss()
-        loss_feat = loss_mse(trans_feat_s, trans_feat_t)
+        loss_feat = loss_mse(trans_feat_s, trans_feat_t) * self.SIM_weight
         
         loss_ce = F.cross_entropy(pred_feat_s, logits_teacher)
         losses_dict = {
