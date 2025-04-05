@@ -82,6 +82,7 @@ class SimKD(Distiller):
             _, features_student = self.student(image)
             feat_student = features_student["feats"]
             source = feat_student[-1]
+            source = self.fam(source)
             trans_feat_s = self.transfer(source)
             temp_feat = self.avg_pool(trans_feat_s)
             temp_feat = temp_feat.view(temp_feat.size(0), -1)
