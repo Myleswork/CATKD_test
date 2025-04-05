@@ -37,12 +37,15 @@ class SimKD(Distiller):
         return super().get_learnable_parameters() + list(self.transfer.parameters()) + list(self.fam.parameters())
     
     def get_extra_parameters(self):
-        num_p = 0
+        num_transfer = 0
+        num_fam = 0
         for p in self.transfer.parameters():
-            num_p += p.numel()
+            num_transfer += p.numel()
+        print("transfer_parameter:", num_transfer)
         for p in self.fam.parameters():
-            num_p += p.numel()
-        return num_p
+            num_fam += p.numel()
+        print("fam_parameter:", num_fam)
+        return num_transfer + num_fam
     
     def forward_train(self, image, target, **kwargs):
         logits_student, features_student = self.student(image)
