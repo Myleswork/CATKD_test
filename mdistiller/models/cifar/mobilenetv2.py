@@ -300,6 +300,9 @@ def mobilenetv2_T_w(T, W, feature_dim=100):
 def mobile_half(num_classes):
     return mobilenetv2_T_w(6, 0.5, num_classes)
 
+def mobile_half_double(num_classes):
+    return mobilenetv2_T_w(6, 1.0, num_classes)
+
 
 def mobilenetv2_T_w_test(T, W, feature_dim=100):
     model = MobileNetV2_test(T=T, feature_dim=feature_dim, width_mult=W)

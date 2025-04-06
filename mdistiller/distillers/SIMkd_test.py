@@ -26,11 +26,20 @@ class SimKD(Distiller):
         )
         
         self.avg_pool = nn.AdaptiveAvgPool2d((1, 1))
+        #TODO:这个最后要写到train_new.py里去
+        if(cfg.DATASET.TYPE == "cifar100"):
+            if cfg.DISTILLER.STUDENT[0] == "S" or cfg.DISTILLER.STUDENT[0] == "v":
+                shape = 4
+            elif cfg.DISTILLER.STUDENT[0] == "M":
+                shape = 2
+            else:
+                shape = 8
 
         self.fam = FAM_Module(
             in_channels = self.feat_s_dim,
             out_channels = self.feat_s_dim,
-            shapes = 8
+            # shapes = 8
+            shapes = shape
         )
         
     def get_learnable_parameters(self):

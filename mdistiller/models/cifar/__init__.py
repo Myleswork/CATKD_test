@@ -22,9 +22,9 @@ from .resnet import (
 from .resnetv2 import ResNet50, ResNet18, ResNet50_test
 from .wrn import wrn_16_1, wrn_16_2, wrn_16_2_test, wrn_40_1, wrn_40_1_test, wrn_40_2, wrn_40_2_test
 from .vgg import vgg19_bn, vgg16_bn, vgg13_bn, vgg13_bn_test, vgg11_bn, vgg8_bn, vgg8_bn_test
-from .mobilenetv2 import mobile_half, mobile_half_test
+from .mobilenetv2 import mobile_half, mobile_half_test, mobile_half_double
 from .ShuffleNetv1 import ShuffleV1, ShuffleV1_test
-from .ShuffleNetv2 import ShuffleV2, ShuffleV2_test
+from .ShuffleNetv2 import ShuffleV2, ShuffleV2_test, ShuffleV2_1_5
 cifar100_model_prefix = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), 
     "../../../download_ckpts/cifar_teachers/"
@@ -107,9 +107,11 @@ cifar_model_dict = {
     "vgg16": (vgg16_bn, None),
     "vgg19": (vgg19_bn, None),
     "MobileNetV2": (mobile_half, None),
+    "MobileNetV2x2": (mobile_half_double, None),
     "MobileNetV2_test": (mobile_half_test, None),
     "ShuffleV1": (ShuffleV1, None),
     "ShuffleV1_test": (ShuffleV1_test, None),
     "ShuffleV2": (ShuffleV2, None),
+    "ShuffleV2_1_5": (ShuffleV2_1_5, None),
     "ShuffleV2_test": (ShuffleV2_test, None),
 }

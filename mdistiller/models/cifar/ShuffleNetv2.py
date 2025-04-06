@@ -278,6 +278,10 @@ def ShuffleV2(**kwargs):
     model = ShuffleNetV2(net_size=1, **kwargs)
     return model
 
+def ShuffleV2_1_5(**kwargs):
+    model = ShuffleNetV2(net_size=1.5, **kwargs)
+    return model
+
 def ShuffleV2_test(**kwargs):
     model = ShuffleNetV2_test(net_size=1, **kwargs)
     return model
