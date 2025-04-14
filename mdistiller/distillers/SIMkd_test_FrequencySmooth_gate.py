@@ -187,6 +187,7 @@ class FAM_Module(nn.Module):
         # ===== 5. 门控融合 =====
         gate_input = torch.cat([high_out, low_out], dim=1)  # [B, 2C, H, W]
         gate = self.gate_mlp(gate_input)  # [B, 1, 1, 1]
+        self.latest_gate = gate.detach()
         out_frequency = gate * high_out + (1 - gate) * low_out
 
         # 6. 空间域卷积

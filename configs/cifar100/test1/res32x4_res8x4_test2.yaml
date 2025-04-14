@@ -3,7 +3,7 @@ EXPERIMENT:
   TAG: "resnet32x4,resnet8x4"
   PROJECT: "cifar100_baselines_simkd"
 DISTILLER:
-  TYPE: "SIMKD_GATE"
+  TYPE: "SIMKD_FE_GATE"
   TEACHER: "resnet32x4"
   STUDENT: "resnet8x4"
 SOLVER:
@@ -17,8 +17,8 @@ SOLVER:
   TYPE: "SGD"
 
 LOG:
-  WANDB: false
-  # WANDB: true
+  # WANDB: false
+  WANDB: true
 
 
 # true: convert the normal CNN to our style

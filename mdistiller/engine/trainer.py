@@ -116,6 +116,10 @@ class BaseTrainer(object):
             fam_module = self.distiller.fam
         rate1_value = fam_module.rate1.item()
         rate2_value = fam_module.rate2.item()
+        if hasattr(fam_module, "latest_gate"):
+            gate_value = fam_module.latest_gate.mean().item()  # 平均门控值（0~1）
+        else:
+            gate_value = -1  # 初始时或无门控值
         # log
         log_dict = OrderedDict(
             {
@@ -126,6 +130,7 @@ class BaseTrainer(object):
                 "test_loss": test_loss,
                 "rate1": rate1_value,
                 "rate2": rate2_value,
+                "gate_mean": gate_value,
             }
         )
         self.log(lr, epoch, log_dict)
