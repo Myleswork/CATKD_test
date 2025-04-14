@@ -1,3 +1,4 @@
+#T:256 S:160 up
 EXPERIMENT:
   NAME: "resnet32x4,MobileNetV2"
   TAG: "resnet32x4,MobileNetV2"

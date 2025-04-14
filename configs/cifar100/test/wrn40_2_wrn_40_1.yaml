@@ -1,11 +1,11 @@
 EXPERIMENT:
-  NAME: "resnet32x4,wrn_16_2,fam"
-  TAG: "resnet32x4,wrn_16_2,fam,3090ti,higher_res"
+  NAME: "wrn40_2,wrn40_1"
+  TAG: "wrn40_2,wrn40_1,fam,3090ti,higher_res,lr0.01"
   PROJECT: "cifar100_baselines_simkd"
 DISTILLER:
   TYPE: "SIMKD_test"
-  TEACHER: "resnet32x4"
-  STUDENT: "wrn_16_2"
+  TEACHER: "wrn_40_2"
+  STUDENT: "wrn_40_1"
 SOLVER:
   BATCH_SIZE: 64
   EPOCHS: 240
@@ -20,11 +20,8 @@ LOG:
   # WANDB: false
   WANDB: true
 
-
-# true: convert the normal CNN to our style
 device: 1
 
 DATASET:
   AUTO_AUG: False
   CUT_OUT: False
-

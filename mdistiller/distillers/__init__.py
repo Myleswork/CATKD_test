@@ -18,6 +18,8 @@ from .CAT_decoupled_KD import CAT_TEST_KD
 from .transfer import transfer
 from .SIMkd import SimKD
 from .SIMkd_test import SimKD as SimKD_test
+from .SIMkd_test_1 import SimKD as SimKD_test_1
+from .SIMkd_test_2 import SimKD as SimKD_test_2
 
 
 distiller_dict = {
@@ -40,5 +42,7 @@ distiller_dict = {
     "CAT_test_KD": CAT_TEST_KD,
     "SIMKD": SimKD,
     "SIMKD_test": SimKD_test,
+    "SIMKD_test_1": SimKD_test_1,
+    "SIMKD_test_2": SimKD_test_2,
     'transfer' :transfer,
 }

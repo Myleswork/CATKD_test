@@ -14,8 +14,8 @@ from mdistiller.engine.cfg import CFG as cfg
 
 
 
-model_type = "resnet110"
-model_dir = 'download_ckpts/cifar_teachers/resnet110_vanilla/ckpt_epoch_240.pth'
+model_type = "vgg8"
+model_dir = 'download_ckpts/cifar_teachers/student_best'
 #"cifar100", "imagenet"
 dataset = "cifar100"
 cfg.DATASET.TYPE = "cifar100"

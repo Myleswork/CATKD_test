@@ -1,11 +1,11 @@
 EXPERIMENT:
-  NAME: "resnet32x4,wrn_16_2,fam"
-  TAG: "resnet32x4,wrn_16_2,fam,3090ti,higher_res"
+  NAME: "resnet32x4,ShuffleV2_1_5,fam"
+  TAG: "resnet32x4,ShuffleV2_1_5,fam,3090ti,higher_res"
   PROJECT: "cifar100_baselines_simkd"
 DISTILLER:
   TYPE: "SIMKD_test"
   TEACHER: "resnet32x4"
-  STUDENT: "wrn_16_2"
+  STUDENT: "ShuffleV2_1_5"
 SOLVER:
   BATCH_SIZE: 64
   EPOCHS: 240

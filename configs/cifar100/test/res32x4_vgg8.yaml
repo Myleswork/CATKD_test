@@ -1,6 +1,6 @@
 EXPERIMENT:
-  NAME: "resnet32x4,vgg8"
-  TAG: "resnet32x4,vgg8,titanxp"
+  NAME: "resnet32x4,vgg8,fam"
+  TAG: "resnet32x4,vgg8,fam,3090ti,higher_res"
   PROJECT: "cifar100_baselines_simkd"
 DISTILLER:
   TYPE: "SIMKD_test"
@@ -9,7 +9,7 @@ DISTILLER:
 SOLVER:
   BATCH_SIZE: 64
   EPOCHS: 240
-  LR: 0.05
+  LR: 0.01
   LR_DECAY_STAGES: [150, 180, 210]
   LR_DECAY_RATE: 0.1
   WEIGHT_DECAY: 0.0005
@@ -17,10 +17,10 @@ SOLVER:
   TYPE: "SGD"
 
 LOG:
-  WANDB: false
-  # WANDB: true
+  # WANDB: false
+  WANDB: true
 
-device: 0
+device: 1
 
 DATASET:
   AUTO_AUG: False
