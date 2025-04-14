@@ -19,7 +19,8 @@ from .transfer import transfer
 from .SIMkd import SimKD
 from .SIMkd_test import SimKD as SimKD_test
 from .SIMkd_test_1 import SimKD as SimKD_test_1
-from .SIMkd_test_2 import SimKD as SimKD_test_2
+from .SIMkd_test_FrequencySmooth import SimKD as SimKD_frequencySmooth
+from .SIMkd_test_FrequencySmooth_gate import SimKD as SimKD_FE_gate
 
 
 distiller_dict = {
@@ -43,6 +44,7 @@ distiller_dict = {
     "SIMKD": SimKD,
     "SIMKD_test": SimKD_test,
     "SIMKD_test_1": SimKD_test_1,
-    "SIMKD_test_2": SimKD_test_2,
+    "SIMKD_FE": SimKD_frequencySmooth,
+    "SIMKD_GATE": SimKD_FE_gate,
     'transfer' :transfer,
 }

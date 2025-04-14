@@ -114,8 +114,8 @@ class BaseTrainer(object):
             fam_module = self.distiller.module.fam
         else:  # 单 GPU 情况
             fam_module = self.distiller.fam
-        cuton_value = fam_module.cuton.item()
         rate1_value = fam_module.rate1.item()
+        rate2_value = fam_module.rate2.item()
         # log
         log_dict = OrderedDict(
             {
@@ -124,8 +124,8 @@ class BaseTrainer(object):
                 "test_acc": test_acc,
                 "test_acc_top5": test_acc_top5,
                 "test_loss": test_loss,
-                "cuton": cuton_value,
                 "rate1": rate1_value,
+                "rate2": rate2_value,
             }
         )
         self.log(lr, epoch, log_dict)

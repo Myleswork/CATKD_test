@@ -43,7 +43,9 @@ class SimKD(Distiller):
             in_channels = self.feat_s_dim,
             out_channels = self.feat_s_dim,
             # shapes = 8
-            shapes = shape
+            shapes = shape,
+            #TODO
+            cutoff_ratio=0.1
         )
         
     def get_learnable_parameters(self):
@@ -108,7 +110,7 @@ class SimKD(Distiller):
     
 
 class FAM_Module(nn.Module):
-    def __init__(self, in_channels, out_channels, shapes):
+    def __init__(self, in_channels, out_channels, shapes, cutoff_ratio=0.1):
         super(FAM_Module, self).__init__()
 
         """
@@ -118,16 +120,23 @@ class FAM_Module(nn.Module):
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.shapes = shapes
+        self.cutoff_ratio = cutoff_ratio
       #  print(self.shapes)
         self.rate1 = torch.nn.Parameter(torch.Tensor(1))  #频域权重
         self.rate2 = torch.nn.Parameter(torch.Tensor(1))  #空间域权重
        # self.out_channels = feat_t_shape[1]
-        self.scale = (1 / (self.in_channels * self.out_channels))  #初始化权重矩阵的缩放系数
-        self.weights = nn.Parameter(
-            #傅里叶域的可学习滤波器，形状为(in_channels, out_channels, shapes, shapes)
-            self.scale * torch.rand(self.in_channels, self.shapes, 
-                                    self.shapes, dtype=torch.cfloat)
-                                    )  
+        self.freq_weights = nn.Parameter(
+            (1 / (in_channels * out_channels)) * torch.rand(in_channels, shapes, shapes, dtype=torch.cfloat)
+        )
+        # 门控机制（使用 high 和 low 的 concat 做池化+MLP）
+        self.gate_mlp = nn.Sequential(
+            nn.AdaptiveAvgPool2d(1),
+            nn.Conv2d(out_channels * 2, out_channels // 2, 1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(out_channels // 2, 1, 1),
+            nn.Sigmoid()
+        )
+
         self.w0 = nn.Conv2d(self.in_channels, self.out_channels, 1) #1x1卷积调整维度，用于空间域的特征转换
 
         #空间域和频率域的权重均初始化为0.5(这有依据么)
@@ -144,42 +153,58 @@ class FAM_Module(nn.Module):
         return torch.einsum("bixy,ixy->bixy", input, weights)  
 
     def forward(self, x):
-        if isinstance(x, tuple):
-            x, cuton = x
-        else:
-            cuton = 0.1
-        batchsize = x.shape[0]
-        # 1. 傅里叶变换 --------------------------------------------------
-        x_ft = torch.fft.fft2(x, norm="ortho")  #对输入进行二维FFT(正交归一化)，形状为(batch_size, in_channels, H, W)
-        #  print(x_ft.shape)
+        B, C, H, W = x.shape
+        # 傅里叶变换
+        x_ft = torch.fft.fft2(x, norm="ortho")
 
-        # 2. 频域卷积 ---------------------------------------------------
-        out_ft = self.compl_mul2d(x_ft, self.weights)  #应用可学习的频率滤波器，输出形状为(batch_size, out_channels, H, W)
+        # 频域卷积
+        x_ft = self.compl_mul2d(x_ft, self.freq_weights)  #应用可学习的频率滤波器，输出形状为(batch_size, out_channels, H, W)
 
-        # 3. 频率屏蔽 ---------------------------------------------------
-        # 将频率分量平移（低频移到中心）
-        batch_fftshift = batch_fftshift2d(out_ft)  # 复数转换为实部和虚部两部分存储，输出形状为(batch_size, out_channels, H, W, 2)
-        # print(batch_fftshift.shape)
+        # ===== 2. 全频谱高斯平滑 =====
+        gauss_mask = self.make_gaussian_mask(H, W, x.device)  # [H, W]
+        x_ft = torch.view_as_real(x_ft)  # -> [B, C, H, W, 2]
+        x_ft[..., 0] *= gauss_mask  # 实部平滑
+        x_ft[..., 1] *= gauss_mask  # 虚部平滑
 
-        h, w = batch_fftshift.shape[2:4]  # height and width  
-        cy, cx = int(h / 2), int(w / 2)  # centerness
-        rh, rw = int(cuton * cy), int(cuton * cx)  # filter_size
-        batch_fftshift[:, :, cy - rh:cy + rh, cx - rw:cx + rw, :] = 0  #将频率分量的中心区域置为0，进行频率屏蔽
+        # ===== 3. 构造高频与低频掩码 =====
+        cy, cx = H // 2, W // 2
+        rh, rw = int(self.cutoff_ratio * cy), int(self.cutoff_ratio * cx)
 
-        # 4. 逆傅里叶变换 -----------------------------------------------
-        # 将频率分量移回原始位置
-        out_ft = batch_ifftshift2d(batch_fftshift)
-        out_ft = torch.view_as_complex(out_ft)  #将实部和虚部转换回复数形式
+        low_mask = torch.zeros_like(x_ft[..., 0])
+        low_mask[:, :, cy - rh:cy + rh, cx - rw:cx + rw] = 1
+        high_mask = 1 - low_mask
 
-        # 5. 逆傅里叶变换 --------------------------------------------------
-        out = torch.fft.ifft2(out_ft, s=(x.size(-2), x.size(-1)),norm="ortho").real
+        # ===== 4. 高低频分支提取（mask并做逆FFT） =====
+        def extract_branch(real, imag, mask):
+            r = real * mask
+            i = imag * mask
+            comp = torch.view_as_complex(torch.stack([r, i], dim=-1))
+            return torch.fft.ifft2(comp, norm="ortho").real  # [B, C, H, W]
 
-        # 6. 空间域卷积 --------------------------------------------------
-        out2 = self.w0(x)  #输出形状为(batch_size, out_channels, H, W)，通过1x1卷积调整维度
+        high_out = extract_branch(x_ft[..., 0], x_ft[..., 1], high_mask)
+        low_out = extract_branch(x_ft[..., 0], x_ft[..., 1], low_mask)
+
+        # ===== 5. 门控融合 =====
+        gate_input = torch.cat([high_out, low_out], dim=1)  # [B, 2C, H, W]
+        gate = self.gate_mlp(gate_input)  # [B, 1, 1, 1]
+        out_frequency = gate * high_out + (1 - gate) * low_out
+
+        # 6. 空间域卷积
+        out_spatial = self.w0(x)
 
         # 7.融合
-        return self.rate1 * out + self.rate2*out2
+        return self.rate1 * out_frequency + self.rate2*out_spatial
     
+    def make_gaussian_mask(self, h, w, device):
+        y = torch.arange(h, device=device) - h // 2
+        x = torch.arange(w, device=device) - w // 2
+        yy, xx = torch.meshgrid(y, x, indexing='ij')
+        sigma = self.cutoff_ratio * min(h, w)
+        gaussian = 1 - torch.exp(-(xx**2 + yy**2) / (2 * sigma**2))
+        gaussian = gaussian / gaussian.max()  # normalize to [0,1]
+        return gaussian[None, None, :, :]  # shape [H, W]
+
+
 def init_rate_half(tensor):
     if tensor is not None:
         tensor.data.fill_(0.5)
