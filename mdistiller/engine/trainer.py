@@ -110,7 +110,12 @@ class BaseTrainer(object):
 
         # validate
         test_acc, test_acc_top5, test_loss = validate(self.val_loader, self.distiller)
-
+        if hasattr(self.distiller, "module"):  # 多 GPU 情况
+            fam_module = self.distiller.module.fam
+        else:  # 单 GPU 情况
+            fam_module = self.distiller.fam
+        cuton_value = fam_module.cuton.item()
+        rate1_value = fam_module.rate1.item()
         # log
         log_dict = OrderedDict(
             {
@@ -119,6 +124,8 @@ class BaseTrainer(object):
                 "test_acc": test_acc,
                 "test_acc_top5": test_acc_top5,
                 "test_loss": test_loss,
+                "cuton": cuton_value,
+                "rate1": rate1_value,
             }
         )
         self.log(lr, epoch, log_dict)
