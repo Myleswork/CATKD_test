@@ -137,6 +137,8 @@ class FAM_Module(nn.Module):
             nn.Sigmoid()
         )
 
+        
+
         self.w0 = nn.Conv2d(self.in_channels, self.out_channels, 1) #1x1卷积调整维度，用于空间域的特征转换
 
         #空间域和频率域的权重均初始化为0.5(这有依据么)
