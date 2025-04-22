@@ -120,6 +120,9 @@ def main(cfg, resume, opts):
         if "SIMKD" in cfg.DISTILLER.TYPE:
             student_s_n = model_student.get_stage_channels()[-1]
             teacher_s_n = model_teacher.get_stage_channels()[-1]
+            if cfg.DATASET.TYPE == "imagenet" and cfg.DISTILLER.STUDENT[0] == 'R':
+                student_s_n = student_s_n//4
+                teacher_s_n = teacher_s_n//4
             # print(cfg.DISTILLER.TEACHER[0])
             if cfg.DISTILLER.TEACHER[0] == 'r' or cfg.DISTILLER.TEACHER[0] == 'R' or cfg.DISTILLER.TEACHER[0] == 'w':
                 teacher_cls = model_teacher.fc

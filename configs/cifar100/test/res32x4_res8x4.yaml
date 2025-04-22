@@ -1,9 +1,9 @@
 EXPERIMENT:
-  NAME: "resnet32x4,resnet8x4,depthwise"
-  TAG: "resnet32x4,resnet8x4,3090ti,fam_depthwise,ori_res"
+  NAME: "resnet32x4,resnet8x4"
+  TAG: "resnet32x4,resnet8x4,3090ti"
   PROJECT: "cifar100_baselines_simkd"
 DISTILLER:
-  TYPE: "SIMKD_tes"
+  TYPE: "SIMKD_TEST"
   TEACHER: "resnet32x4"
   STUDENT: "resnet8x4"
 SOLVER:
@@ -17,12 +17,12 @@ SOLVER:
   TYPE: "SGD"
 
 LOG:
-  # WANDB: false
-  WANDB: true
+  WANDB: false
+  # WANDB: true
 
 
 # true: convert the normal CNN to our style
-device: 1
+device: 0
 
 DATASET:
   AUTO_AUG: False

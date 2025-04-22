@@ -38,6 +38,8 @@ class SimKD(Distiller):
                 shape = 2
             else:
                 shape = 8
+        else:
+            shape = 7
 
         self.fam = FAM_Module(
             in_channels = self.feat_s_dim,
@@ -68,6 +70,9 @@ class SimKD(Distiller):
         feat_student = features_student["feats"]
         feat_teacher = features_teacher["feats"]
         s_H, t_H = feat_student[-1].shape[2], feat_teacher[-1].shape[2]
+        print("s_H:", s_H)
+        s_c, t_c = feat_student[-1].shape[1], feat_teacher[-1].shape[1]
+        print("s_c, t_c:", s_c, t_c)
         if s_H > t_H:
             source = F.adaptive_avg_pool2d(feat_student[-1], (t_H, t_H))
             target = feat_teacher[-1]
@@ -147,6 +152,8 @@ class FAM_Module(nn.Module):
         返回：
             输出复数张量，形状(batch, out_channels, H, W)
         """
+        print("input_shape:", input.shape)
+        print("weights_shape:", weights.shape)
         return torch.einsum("bixy,ixy->bixy", input, weights)  
 
     def forward(self, x):

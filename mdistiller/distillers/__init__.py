@@ -17,10 +17,9 @@ from .CAT_hcl_KD import CAT_hcl_KD
 from .CAT_decoupled_KD import CAT_TEST_KD
 from .transfer import transfer
 from .SIMkd import SimKD
-from .SIMkd_test import SimKD as SimKD_test
-from .SIMkd_test_1 import SimKD as SimKD_test_1
 from .SIMkd_test_FrequencySmooth import SimKD as SimKD_frequencySmooth
 from .SIMkd_test_FrequencySmooth_gate import SimKD as SimKD_FE_gate
+from .SFAKD_final import SimKD as SimKD_test
 
 
 distiller_dict = {
@@ -42,9 +41,8 @@ distiller_dict = {
     "CAT_hcl_KD": CAT_hcl_KD,
     "CAT_test_KD": CAT_TEST_KD,
     "SIMKD": SimKD,
-    "SIMKD_test": SimKD_test,
-    "SIMKD_test_1": SimKD_test_1,
     "SIMKD_FS": SimKD_frequencySmooth,
     "SIMKD_FS_GATE": SimKD_FE_gate,
+    "SIMKD_TEST": SimKD_test,
     'transfer' :transfer,
 }

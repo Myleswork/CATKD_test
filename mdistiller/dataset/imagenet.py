@@ -7,7 +7,7 @@ from .autoaugment import ImageNetPolicy
 from .cutout import Cutout
 
 
-data_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../data/imagenet_1k')
+data_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../data/imagenet')
 
 
 class ImageNet(ImageFolder):

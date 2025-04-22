@@ -21,23 +21,9 @@ SOLVER:
   MOMENTUM: 0.9
   TYPE: "SGD"
 
-CAT_KD:
-  LOSS:
-    # β
-    CAT_loss_weight: 0.5
-    # the resolution of the transferred CAMs after the average pooling function
-    CAM_RESOLUTION: 4
-    CE_WEIGHT: 1.
-  #True: CAT
-  #False: CAT-KD
-  onlyCAT: False
-  IF_NORMALIZE: False
-
-# true: convert the normal CNN to our style
-if_test: True
 device: 0
 
 LOG:
-  TENSORBOARD_FREQ: 50
-  SAVE_CHECKPOINT_FREQ: 10
+  # TENSORBOARD_FREQ: 50
+  # SAVE_CHECKPOINT_FREQ: 10
   WANDB: False
