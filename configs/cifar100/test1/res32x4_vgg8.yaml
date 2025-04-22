@@ -1,0 +1,27 @@
+EXPERIMENT:
+  NAME: "resnet32x4,vgg8,fam,dw"
+  TAG: "resnet32x4,vgg8,fam,3090ti,ori_res,dw"
+  PROJECT: "cifar100_baselines_simkd"
+DISTILLER:
+  TYPE: "SIMKD_test_1"
+  TEACHER: "resnet32x4"
+  STUDENT: "vgg8"
+SOLVER:
+  BATCH_SIZE: 64
+  EPOCHS: 240
+  LR: 0.01
+  LR_DECAY_STAGES: [150, 180, 210]
+  LR_DECAY_RATE: 0.1
+  WEIGHT_DECAY: 0.0005
+  MOMENTUM: 0.9
+  TYPE: "SGD"
+
+LOG:
+  # WANDB: false
+  WANDB: true
+
+device: 1
+
+DATASET:
+  AUTO_AUG: False
+  CUT_OUT: False

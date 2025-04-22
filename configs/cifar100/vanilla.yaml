@@ -1,11 +1,11 @@
 EXPERIMENT:
-  NAME: ""
-  TAG: "vanilla,res32x4,res8x4"
-  PROJECT: "cifar100_baselines"
+  NAME: "ResNet110x2_train_1"
+  TAG: "vanilla,ResNet110x2,ResNet110x2"
+  PROJECT: "cifar100_baselines_teacher_train"
 DISTILLER:
   TYPE: "NONE"
-  TEACHER: "resnet32x4"
-  STUDENT: "resnet8x4"
+  TEACHER: "ResNet110x2"
+  STUDENT: "ResNet110x2"
 SOLVER:
   BATCH_SIZE: 64
   EPOCHS: 240
@@ -15,3 +15,14 @@ SOLVER:
   WEIGHT_DECAY: 0.0005
   MOMENTUM: 0.9
   TYPE: "SGD"
+
+LOG:
+  # WANDB: false
+  WANDB: true
+
+device: 1
+
+DATASET:
+  AUTO_AUG: False
+  CUT_OUT: False
+

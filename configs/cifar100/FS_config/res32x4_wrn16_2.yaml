@@ -1,0 +1,30 @@
+EXPERIMENT:
+  NAME: "resnet32x4,wrn_16_2,fam"
+  TAG: "resnet32x4,wrn_16_2,fam,3090ti,fam,79.5_res,dw,fs"
+  PROJECT: "cifar100_baselines_simkd"
+DISTILLER:
+  TYPE: "SIMKD_FS"
+  TEACHER: "resnet32x4"
+  STUDENT: "wrn_16_2"
+SOLVER:
+  BATCH_SIZE: 64
+  EPOCHS: 240
+  LR: 0.01
+  LR_DECAY_STAGES: [150, 180, 210]
+  LR_DECAY_RATE: 0.1
+  WEIGHT_DECAY: 0.0005
+  MOMENTUM: 0.9
+  TYPE: "SGD"
+
+LOG:
+  WANDB: false
+  # WANDB: true
+
+
+# true: convert the normal CNN to our style
+device: 0
+
+DATASET:
+  AUTO_AUG: False
+  CUT_OUT: False
+

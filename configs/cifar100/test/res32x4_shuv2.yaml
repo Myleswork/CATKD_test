@@ -1,6 +1,6 @@
 EXPERIMENT:
   NAME: "resnet32x4,ShuffleV2,fam"
-  TAG: "resnet32x4,ShuffleV2,fam,3090ti,higher_res"
+  TAG: "resnet32x4,ShuffleV2,fam,3090ti,ori_res"
   PROJECT: "cifar100_baselines_simkd"
 DISTILLER:
   TYPE: "SIMKD_test"

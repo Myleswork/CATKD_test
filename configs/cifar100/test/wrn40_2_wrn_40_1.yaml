@@ -1,6 +1,6 @@
 EXPERIMENT:
   NAME: "wrn40_2,wrn40_1"
-  TAG: "wrn40_2,wrn40_1,fam,3090ti,higher_res,lr0.01"
+  TAG: "wrn40_2,wrn40_1,fam,3090ti,aug_higher_wrn"
   PROJECT: "cifar100_baselines_simkd"
 DISTILLER:
   TYPE: "SIMKD_test"
@@ -9,7 +9,7 @@ DISTILLER:
 SOLVER:
   BATCH_SIZE: 64
   EPOCHS: 240
-  LR: 0.01
+  LR: 0.05
   LR_DECAY_STAGES: [150, 180, 210]
   LR_DECAY_RATE: 0.1
   WEIGHT_DECAY: 0.0005

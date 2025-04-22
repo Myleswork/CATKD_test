@@ -1,6 +1,6 @@
 EXPERIMENT:
-  NAME: "vgg13,vgg8"
-  TAG: "vgg13,vgg8,titanxp"
+  NAME: "vgg13,vgg8,simkd_baseline"
+  TAG: "vgg13,vgg8,simkd_baseline,3090ti"
   PROJECT: "cifar100_baselines_simkd"
 DISTILLER:
   TYPE: "SIMKD"
@@ -17,10 +17,10 @@ SOLVER:
   TYPE: "SGD"
 
 LOG:
-  WANDB: false
-  # WANDB: true
+  # WANDB: false
+  WANDB: true
 
-device: 0
+device: 1
 
 DATASET:
   AUTO_AUG: False

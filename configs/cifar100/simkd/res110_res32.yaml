@@ -1,5 +1,5 @@
 EXPERIMENT:
-  NAME: "resnet110,resnet32"
+  NAME: "resnet110,resnet32,simkd_baseline"
   TAG: "resnet110,resnet32,titanxp"
   PROJECT: "cifar100_baselines_simkd"
 DISTILLER:
@@ -22,7 +22,7 @@ LOG:
 
 
 # true: convert the normal CNN to our style
-device: 0
+device: 1
 
 DATASET:
   AUTO_AUG: False

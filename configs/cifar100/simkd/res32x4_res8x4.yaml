@@ -1,6 +1,6 @@
 EXPERIMENT:
-  NAME: "resnet32x4,resnet8x4"
-  TAG: "resnet32x4,resnet8x4,titanxp"
+  NAME: "resnet32x4,resnet8x4,simkd_baseline"
+  TAG: "resnet32x4,resnet8x4,3090ti,higher_res,no_aug"
   PROJECT: "cifar100_baselines_simkd"
 DISTILLER:
   TYPE: "SIMKD"
@@ -17,12 +17,12 @@ SOLVER:
   TYPE: "SGD"
 
 LOG:
-  WANDB: false
-  # WANDB: true
+  # WANDB: false
+  WANDB: true
 
 
 # true: convert the normal CNN to our style
-device: 0
+device: 1
 
 DATASET:
   AUTO_AUG: False

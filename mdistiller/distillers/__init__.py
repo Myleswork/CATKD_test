@@ -44,7 +44,7 @@ distiller_dict = {
     "SIMKD": SimKD,
     "SIMKD_test": SimKD_test,
     "SIMKD_test_1": SimKD_test_1,
-    "SIMKD_FE": SimKD_frequencySmooth,
-    "SIMKD_FE_GATE": SimKD_FE_gate,
+    "SIMKD_FS": SimKD_frequencySmooth,
+    "SIMKD_FS_GATE": SimKD_FE_gate,
     'transfer' :transfer,
 }

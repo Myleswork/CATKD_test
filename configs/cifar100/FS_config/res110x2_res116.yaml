@@ -1,0 +1,30 @@
+EXPERIMENT:
+  NAME: "ResNet110x2,Resnet116,fs"
+  TAG: "ResNet110x2,ResNet116,3090ti,fs"
+  PROJECT: "cifar100_SFAKD"
+DISTILLER:
+  TYPE: "SIMKD_FS"
+  TEACHER: "ResNet110x2"
+  STUDENT: "ResNet116"
+SOLVER:
+  BATCH_SIZE: 64
+  EPOCHS: 240
+  LR: 0.05
+  LR_DECAY_STAGES: [150, 180, 210]
+  LR_DECAY_RATE: 0.1
+  WEIGHT_DECAY: 0.0005
+  MOMENTUM: 0.9
+  TYPE: "SGD"
+
+LOG:
+  # WANDB: false
+  WANDB: true
+
+
+# true: convert the normal CNN to our style
+device: 1
+
+DATASET:
+  AUTO_AUG: False
+  CUT_OUT: False
+

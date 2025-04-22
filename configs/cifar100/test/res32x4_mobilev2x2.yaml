@@ -1,4 +1,3 @@
-#T:256 S:320 down
 EXPERIMENT:
   NAME: "resnet32x4,MobileNetV2x2,fam"
   TAG: "resnet32x4,MobileNetV2x2,fam,3090ti,higher_res"
@@ -18,12 +17,12 @@ SOLVER:
   TYPE: "SGD"
 
 LOG:
-  WANDB: false
-  # WANDB: true
+  # WANDB: false
+  WANDB: true
 
 
 # true: convert the normal CNN to our style
-device: 0
+device: 1
 
 DATASET:
   AUTO_AUG: False

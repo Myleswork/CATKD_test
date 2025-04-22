@@ -96,8 +96,14 @@ class SimKD(Distiller):
     def forward_test(self, image):
         with torch.no_grad():
             _, features_student = self.student(image)
+            _, features_teacher = self.teacher(image)
             feat_student = features_student["feats"]
-            source = feat_student[-1]
+            feat_teacher = features_teacher["feats"]
+            s_H, t_H = feat_student[-1].shape[2], feat_teacher[-1].shape[2]
+            if s_H > t_H:
+                source = F.adaptive_avg_pool2d(feat_student[-1], (t_H, t_H))
+            else:
+                source = feat_student[-1]
             source = self.fam(source)
             trans_feat_s = self.transfer(source)
             temp_feat = self.avg_pool(trans_feat_s)
