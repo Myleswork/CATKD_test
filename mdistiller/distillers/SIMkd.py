@@ -44,7 +44,7 @@ class SimKD(Distiller):
         feat_student = features_student["feats"]
         feat_teacher = features_teacher["feats"]
         s_H, t_H = feat_student[-1].shape[2], feat_teacher[-1].shape[2]
-        print(s_H, t_H)
+        # print(s_H, t_H)
         if s_H > t_H:
             source = F.adaptive_avg_pool2d(feat_student[-1], (t_H, t_H))
             target = feat_teacher[-1]

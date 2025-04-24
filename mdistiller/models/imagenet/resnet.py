@@ -160,7 +160,13 @@ class ResNet(nn.Module):
 
     def get_stage_channels(self):
         return [256, 512, 1024, 2048]
-
+    
+    def get_block_expansion(self):
+        if isinstance(self.layer1[0], Bottleneck):
+            return 1
+        else:
+            return 4
+    
     def forward(self, x):
         x = self.conv1(x)
         x = self.bn1(x)

@@ -119,10 +119,14 @@ def main(cfg, resume, opts):
         # if cfg.DISTILLER.TYPE == "SIMKD" or cfg.DISTILLER.TYPE == "SIMKD_test" or cfg.DISTILLER.TYPE == "SIMKD_test_2":
         if "SIMKD" in cfg.DISTILLER.TYPE:
             student_s_n = model_student.get_stage_channels()[-1]
-            teacher_s_n = model_teacher.get_stage_channels()[-1]
-            if cfg.DATASET.TYPE == "imagenet" and cfg.DISTILLER.STUDENT[0] == 'R':
-                student_s_n = student_s_n//4
-                teacher_s_n = teacher_s_n//4
+            teacher_t_n = model_teacher.get_stage_channels()[-1]
+            if cfg.DATASET.TYPE == "imagenet":
+                if cfg.DISTILLER.TEACHER[0] == 'R':
+                    teacher_t_n = teacher_t_n // model_teacher.get_block_expansion()
+                if cfg.DISTILLER.STUDENT[0] == 'R':
+                    student_s_n = student_s_n // model_student.get_block_expansion()
+                print('student_s_n:', student_s_n)
+                print('teacher_s_n:', teacher_t_n)
             # print(cfg.DISTILLER.TEACHER[0])
             if cfg.DISTILLER.TEACHER[0] == 'r' or cfg.DISTILLER.TEACHER[0] == 'R' or cfg.DISTILLER.TEACHER[0] == 'w':
                 teacher_cls = model_teacher.fc
@@ -131,7 +135,7 @@ def main(cfg, resume, opts):
             else:
                 teacher_cls = model_teacher.linear
             distiller = distiller_dict[cfg.DISTILLER.TYPE](
-                model_student, model_teacher, cfg, student_s_n, teacher_s_n, teacher_cls
+                model_student, model_teacher, cfg, student_s_n, teacher_t_n, teacher_cls
             )
             
     # convert teacher's structure
