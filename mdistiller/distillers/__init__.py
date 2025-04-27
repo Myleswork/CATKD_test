@@ -18,7 +18,7 @@ from .CAT_decoupled_KD import CAT_TEST_KD
 from .transfer import transfer
 from .SIMkd import SimKD
 from .SIMkd_test_FrequencySmooth import SimKD as SimKD_frequencySmooth
-from .SIMkd_test_FrequencySmooth_gate import SimKD as SimKD_FE_gate
+from .SIMkd_test_FrequencySmooth_test import SimKD as SimKD_FE_gate
 from .SFAKD_final import SimKD as SimKD_test
 
 

@@ -4,6 +4,8 @@ from unittest import skip
 import torch
 import torch.nn as nn
 import torch.backends.cudnn as cudnn
+import torch.distributed as dist
+from torch.nn.parallel import DistributedDataParallel as DDP
 
 import sys
 
@@ -177,6 +179,10 @@ def main(cfg, resume, opts):
                 model_student, model_teacher, cfg
             )
     distiller = torch.nn.DataParallel(distiller.cuda())
+    # dist.init_process_group(backend="nccl")
+    # distiller = DDP(
+    #     distiller.cuda(), device_ids=[cfg.device], find_unused_parameters=True
+    # )
 
     if cfg.DISTILLER.TYPE != "NONE":
         print(

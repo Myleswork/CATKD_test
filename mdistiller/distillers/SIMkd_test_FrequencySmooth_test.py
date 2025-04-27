@@ -38,18 +38,18 @@ class SimKD(Distiller):
                 shape = 2
             else:
                 shape = 8
+        else:
+            shape = 7
 
-        self.fam = FAM_Module(
+        self.sfa = SFA_Module(
             in_channels = self.feat_s_dim,
             out_channels = self.feat_s_dim,
             # shapes = 8
-            shapes = shape,
-            #TODO
-            cutoff_ratio=0.1
+            shapes = shape
         )
         
     def get_learnable_parameters(self):
-        return super().get_learnable_parameters() + list(self.transfer.parameters()) + list(self.fam.parameters())
+        return super().get_learnable_parameters() + list(self.transfer.parameters()) + list(self.sfa.parameters())
     
     def get_extra_parameters(self):
         num_transfer = 0
@@ -57,9 +57,9 @@ class SimKD(Distiller):
         for p in self.transfer.parameters():
             num_transfer += p.numel()
         print("transfer_parameter:", num_transfer)
-        for p in self.fam.parameters():
+        for p in self.sfa.parameters():
             num_fam += p.numel()
-        print("fam_parameter:", num_fam)
+        print("sfa_parameter:", num_fam)
         return num_transfer + num_fam
     
     def forward_train(self, image, target, **kwargs):
@@ -70,6 +70,9 @@ class SimKD(Distiller):
         feat_student = features_student["feats"]
         feat_teacher = features_teacher["feats"]
         s_H, t_H = feat_student[-1].shape[2], feat_teacher[-1].shape[2]
+        # print("s_H:", s_H)
+        s_c, t_c = feat_student[-1].shape[1], feat_teacher[-1].shape[1]
+        # print("s_c, t_c:", s_c, t_c)
         if s_H > t_H:
             source = F.adaptive_avg_pool2d(feat_student[-1], (t_H, t_H))
             target = feat_teacher[-1]
@@ -79,10 +82,14 @@ class SimKD(Distiller):
         
         trans_feat_t = target
         #这里添加一个FAM模块
-        source = self.fam(source)
+        source = self.sfa(source)
+        # print("source_shape:", source.shape)
         trans_feat_s = self.transfer(source)
+        # print("trans_feat_s_shape:", trans_feat_s.shape)
         temp_feat = self.avg_pool(trans_feat_s)
+        # print("temp_feat", temp_feat.shape)
         temp_feat = temp_feat.view(temp_feat.size(0), -1)
+        # print("temp_feat", temp_feat.shape)
         pred_feat_s = self.t_cls(temp_feat) #reuse teacher cls head
         
         loss_mse = nn.MSELoss()
@@ -98,9 +105,15 @@ class SimKD(Distiller):
     def forward_test(self, image):
         with torch.no_grad():
             _, features_student = self.student(image)
+            _, features_teacher = self.teacher(image)
             feat_student = features_student["feats"]
-            source = feat_student[-1]
-            source = self.fam(source)
+            feat_teacher = features_teacher["feats"]
+            s_H, t_H = feat_student[-1].shape[2], feat_teacher[-1].shape[2]
+            if s_H > t_H:
+                source = F.adaptive_avg_pool2d(feat_student[-1], (t_H, t_H))
+            else:
+                source = feat_student[-1]
+            source = self.sfa(source)
             trans_feat_s = self.transfer(source)
             temp_feat = self.avg_pool(trans_feat_s)
             temp_feat = temp_feat.view(temp_feat.size(0), -1)
@@ -109,9 +122,9 @@ class SimKD(Distiller):
         return pred_feat_s
     
 
-class FAM_Module(nn.Module):
-    def __init__(self, in_channels, out_channels, shapes, cutoff_ratio=0.1):
-        super(FAM_Module, self).__init__()
+class SFA_Module(nn.Module):
+    def __init__(self, in_channels, out_channels, shapes):
+        super(SFA_Module, self).__init__()
 
         """
         feat_s_shape, feat_t_shape
@@ -120,129 +133,51 @@ class FAM_Module(nn.Module):
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.shapes = shapes
-        self.cutoff_ratio = cutoff_ratio
       #  print(self.shapes)
-        self.rate1 = torch.nn.Parameter(torch.Tensor(1))  #频域权重
-        self.rate2 = torch.nn.Parameter(torch.Tensor(1))  #空间域权重
+        self.rate1 = torch.nn.Parameter(torch.tensor(0.5))  #频域权重
+        self.rate2 = torch.nn.Parameter(torch.tensor(0.5))  #空间域权重
        # self.out_channels = feat_t_shape[1]
-        self.freq_weights = nn.Parameter(
-            (1 / (in_channels * out_channels)) * torch.rand(in_channels, shapes, shapes, dtype=torch.cfloat)
-        )
-        # 门控机制（使用 high 和 low 的 concat 做池化+MLP）
-        self.gate_mlp = nn.Sequential(
-            nn.AdaptiveAvgPool2d(1),
-            nn.Conv2d(out_channels * 2, out_channels // 2, 1),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(out_channels // 2, 1, 1),
-            nn.Sigmoid()
-        )
-
-        
-
+        self.scale = (1 / (self.in_channels * self.out_channels))  #初始化权重矩阵的缩放系数
+        weights = nn.Parameter(
+            self.scale * torch.rand(self.in_channels, self.shapes, 
+                                    self.shapes, dtype=torch.cfloat)
+                                    )
+        self.register_parameter("weights", nn.Parameter(weights))
         self.w0 = nn.Conv2d(self.in_channels, self.out_channels, 1) #1x1卷积调整维度，用于空间域的特征转换
 
-        #空间域和频率域的权重均初始化为0.5(这有依据么)
-        init_rate_half(self.rate1)
-        init_rate_half(self.rate2)
-    def compl_mul2d(self, input, weights):
-        """复数矩阵乘法（实现频域卷积操作）
-        参数：
-            input: 输入复数张量，形状(batch, in_channels, H, W)
-            weights: 复数滤波器，形状(in_channels, out_channels, H, W)
-        返回：
-            输出复数张量，形状(batch, out_channels, H, W)
-        """
-        return torch.einsum("bixy,ixy->bixy", input, weights)  
 
     def forward(self, x):
-        B, C, H, W = x.shape
-        # 傅里叶变换
-        x_ft = torch.fft.fft2(x, norm="ortho")
+        # 1. 傅里叶变换 --------------------------------------------------
+        x_ft = torch.fft.fft2(x, norm="ortho")  #对输入进行二维FFT(正交归一化)，形状为(batch_size, in_channels, H, W)
 
-        # 频域卷积
-        x_ft = self.compl_mul2d(x_ft, self.freq_weights)  #应用可学习的频率滤波器，输出形状为(batch_size, out_channels, H, W)
+        # 2. 频域卷积 ---------------------------------------------------
+        out_ft = torch.einsum("bixy,ixy->bixy", x_ft, self.weights)  #应用可学习的频率滤波器，输出形状为(batch_size, out_channels, H, W)
 
-        # ===== 2. 全频谱高斯平滑 =====
-        gauss_mask = self.make_gaussian_mask(H, W, x.device)  # [H, W]
-        x_ft = torch.view_as_real(x_ft)  # -> [B, C, H, W, 2]
-        x_ft[..., 0] *= gauss_mask  # 实部平滑
-        x_ft[..., 1] *= gauss_mask  # 虚部平滑
+        h, w = out_ft.shape[2], out_ft.shape[3]  # height and width
+        # print(h, w)
+        mask = make_gaussian_mask(h, w, 0.1)
+        mask = mask.unsqueeze(0).unsqueeze(0).to(out_ft.dtype)
 
-        # ===== 3. 构造高频与低频掩码 =====
-        cy, cx = H // 2, W // 2
-        rh, rw = int(self.cutoff_ratio * cy), int(self.cutoff_ratio * cx)
+        out_ft = torch.fft.fftshift(out_ft, dim=(-2, -1))  
+        out_ft = out_ft * mask 
+        out_ft = torch.fft.ifftshift(out_ft, dim=(-2, -1))
 
-        low_mask = torch.zeros_like(x_ft[..., 0])
-        low_mask[:, :, cy - rh:cy + rh, cx - rw:cx + rw] = 1
-        high_mask = 1 - low_mask
+        out = torch.fft.ifft2(out_ft, norm="ortho").real  #对频域特征进行逆FFT，得到复数形式的输出
 
-        # ===== 4. 高低频分支提取（mask并做逆FFT） =====
-        def extract_branch(real, imag, mask):
-            r = real * mask
-            i = imag * mask
-            comp = torch.view_as_complex(torch.stack([r, i], dim=-1))
-            return torch.fft.ifft2(comp, norm="ortho").real  # [B, C, H, W]
-
-        high_out = extract_branch(x_ft[..., 0], x_ft[..., 1], high_mask)
-        low_out = extract_branch(x_ft[..., 0], x_ft[..., 1], low_mask)
-
-        # ===== 5. 门控融合 =====
-        gate_input = torch.cat([high_out, low_out], dim=1)  # [B, 2C, H, W]
-        gate = self.gate_mlp(gate_input)  # [B, 1, 1, 1]
-        self.latest_gate = gate.detach()
-        out_frequency = gate * high_out + (1 - gate) * low_out
-
-        # 6. 空间域卷积
-        out_spatial = self.w0(x)
+        # 6. 空间域卷积 --------------------------------------------------
+        out2 = self.w0(x)  #输出形状为(batch_size, out_channels, H, W)，通过1x1卷积调整维度
 
         # 7.融合
-        return self.rate1 * out_frequency + self.rate2*out_spatial
-    
-    def make_gaussian_mask(self, h, w, device):
+        return self.rate1 * out + self.rate2*out2
+
+def make_gaussian_mask(h, w, cutoff_ratio, device='cuda'):
         y = torch.arange(h, device=device) - h // 2
         x = torch.arange(w, device=device) - w // 2
         yy, xx = torch.meshgrid(y, x, indexing='ij')
-        sigma = self.cutoff_ratio * min(h, w)
+        sigma = cutoff_ratio * min(h, w)
         gaussian = 1 - torch.exp(-(xx**2 + yy**2) / (2 * sigma**2))
         gaussian = gaussian / gaussian.max()  # normalize to [0,1]
-        return gaussian[None, None, :, :]  # shape [H, W]
-
-
-def init_rate_half(tensor):
-    if tensor is not None:
-        tensor.data.fill_(0.5)
-
-def init_rate_0(tensor):
-    if tensor is not None:
-        tensor.data.fill_(0.)
-
-def batch_fftshift2d(x):
-    real, imag = x.real, x.imag #分解实部和虚部
-    for dim in range(1, len(real.size())):
-        n_shift = real.size(dim)//2
-        if real.size(dim) % 2 != 0:
-            n_shift += 1  # for odd-sized images
-        real = roll_n(real, axis=dim, n=n_shift)
-        imag = roll_n(imag, axis=dim, n=n_shift)
-    return torch.stack((real, imag), -1)  # last dim=2 (real&imag)
-
-def batch_ifftshift2d(x):
-    real, imag = torch.unbind(x, -1)
-    for dim in range(len(real.size()) - 1, 0, -1):  #与上面的shift相反
-        real = roll_n(real, axis=dim, n=real.size(dim)//2)
-        imag = roll_n(imag, axis=dim, n=imag.size(dim)//2)
-    return torch.stack((real, imag), -1)  # last dim=2 (real&imag)
-
-def roll_n(X, axis, n):
-    f_idx = tuple(slice(None, None, None)
-            if i != axis else slice(0, n, None)
-            for i in range(X.dim()))
-    b_idx = tuple(slice(None, None, None)
-            if i != axis else slice(n, None, None)
-            for i in range(X.dim()))
-    front = X[f_idx]
-    back = X[b_idx]
-    return torch.cat([back, front], axis)
+        return gaussian  # shape [H, W]
 
 class DepthwiseSeparableConv2d(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, bias=False):
