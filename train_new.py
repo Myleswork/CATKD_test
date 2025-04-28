@@ -119,7 +119,7 @@ def main(cfg, resume, opts):
             )
             #simkd
         # if cfg.DISTILLER.TYPE == "SIMKD" or cfg.DISTILLER.TYPE == "SIMKD_test" or cfg.DISTILLER.TYPE == "SIMKD_test_2":
-        if "SIMKD" in cfg.DISTILLER.TYPE:
+        if "SIMKD" in cfg.DISTILLER.TYPE or "SFAKD" in cfg.DISTILLER.TYPE:
             student_s_n = model_student.get_stage_channels()[-1]
             teacher_t_n = model_teacher.get_stage_channels()[-1]
             if cfg.DATASET.TYPE == "imagenet":

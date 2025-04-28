@@ -3,21 +3,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 from ._base import Distiller
 
-def kd_loss(logits_student, logits_teacher, temperature=4):
-    log_pred_student = F.log_softmax(logits_student / temperature, dim=1)
-    pred_teacher = F.softmax(logits_teacher / temperature, dim=1)
-    loss_kd = F.kl_div(log_pred_student, pred_teacher, reduction="none").sum(1).mean()
-    loss_kd *= temperature**2
-    return loss_kd
 
-class SimKD(Distiller):
+class SFAKD(Distiller):
     def __init__(self, student, teacher, cfg, s_n, t_n, t_cls):
         super().__init__(student, teacher)
         self.feat_s_dim = s_n
         self.feat_t_dim = t_n
         self.t_cls = t_cls
-        self.SIM_weight = cfg.SIMKD.LOSS.FEAT_WEIGHT
-        self.factor = cfg.SIMKD.FACTOR
 
         self.mid_channel = (s_n + t_n) // 2
         
@@ -50,7 +42,6 @@ class SimKD(Distiller):
         self.sfa = SFA_Module(
             in_channels = self.feat_s_dim,
             out_channels = self.feat_s_dim,
-            # shapes = 8
             shapes = shape
         )
         
@@ -76,60 +67,48 @@ class SimKD(Distiller):
         feat_student = features_student["feats"]
         feat_teacher = features_teacher["feats"]
         s_H, t_H = feat_student[-1].shape[2], feat_teacher[-1].shape[2]
-        # print("s_H:", s_H)
         s_c, t_c = feat_student[-1].shape[1], feat_teacher[-1].shape[1]
-        # print("s_c, t_c:", s_c, t_c)
         if s_H > t_H:
             source = F.adaptive_avg_pool2d(feat_student[-1], (t_H, t_H))
-            target_feat = feat_teacher[-1]
+            target = feat_teacher[-1]
         else:
             source = feat_student[-1]
-            target_feat = F.adaptive_avg_pool2d(feat_teacher[-1], (s_H, s_H))
+            target = F.adaptive_avg_pool2d(feat_teacher[-1], (s_H, s_H))
         
-        trans_feat_t = target_feat
-        #这里添加一个FAM模块
+        trans_feat_t = target
         source = self.sfa(source)
-        # print("source_shape:", source.shape)
         trans_feat_s = self.transfer(source)
-        # print("trans_feat_s_shape:", trans_feat_s.shape)
         temp_feat = self.avg_pool(trans_feat_s)
-        # print("temp_feat", temp_feat.shape)
         temp_feat = temp_feat.view(temp_feat.size(0), -1)
-        # print("temp_feat", temp_feat.shape)
-        pred_feat_s = self.t_cls(temp_feat) #reuse teacher cls head
-
+        pred_feat_s = self.t_cls(temp_feat)
         
         loss_mse = nn.MSELoss()
         loss_feat = loss_mse(trans_feat_s, trans_feat_t)
         
-        loss_ce = F.cross_entropy(logits_student, target)
-        loss_trans_kd = kd_loss(logits_student, pred_feat_s, 4)
         losses_dict = {
-            "loss_ce": loss_ce,
-            "loss_trans_ce": loss_trans_kd,
+            # "loss_ce": loss_ce,
             "loss_simkd_feat": loss_feat
         }
         return pred_feat_s, losses_dict
     
-    # def forward_test(self, image):
-    #     with torch.no_grad():
-    #         logits_student, features_student = self.student(image)
-    #         _, features_teacher = self.teacher(image)
-    #         feat_student = features_student["feats"]
-    #         feat_teacher = features_teacher["feats"]
-    #         s_H, t_H = feat_student[-1].shape[2], feat_teacher[-1].shape[2]
-    #         if s_H > t_H:
-    #             source = F.adaptive_avg_pool2d(feat_student[-1], (t_H, t_H))
-    #         else:
-    #             source = feat_student[-1]
-    #         source = self.sfa(source)
-    #         trans_feat_s = self.transfer(source)
-    #         temp_feat = self.avg_pool(trans_feat_s)
-    #         temp_feat = temp_feat.view(temp_feat.size(0), -1)
-    #         # pred_feat_s = self.t_cls(temp_feat)
-    #         pred_feat_s = self.t_cls(temp_feat)
+    def forward_test(self, image):
+        with torch.no_grad():
+            _, features_student = self.student(image)
+            _, features_teacher = self.teacher(image)
+            feat_student = features_student["feats"]
+            feat_teacher = features_teacher["feats"]
+            s_H, t_H = feat_student[-1].shape[2], feat_teacher[-1].shape[2]
+            if s_H > t_H:
+                source = F.adaptive_avg_pool2d(feat_student[-1], (t_H, t_H))
+            else:
+                source = feat_student[-1]
+            source = self.sfa(source)
+            trans_feat_s = self.transfer(source)
+            temp_feat = self.avg_pool(trans_feat_s)
+            temp_feat = temp_feat.view(temp_feat.size(0), -1)
+            pred_feat_s = self.t_cls(temp_feat)
 
-    #     return pred_feat_s
+        return pred_feat_s
     
 
 class SFA_Module(nn.Module):
@@ -157,13 +136,10 @@ class SFA_Module(nn.Module):
 
 
     def forward(self, x):
-        x_ft = torch.fft.fft2(x, norm="ortho")  #对输入进行二维FFT(正交归一化)，形状为(batch_size, in_channels, H, W)
+        x_ft = torch.fft.fft2(x, norm="ortho")
+        out_ft = torch.einsum("bixy,ixy->bixy", x_ft, self.weights)
 
-        # 2. 频域卷积 ---------------------------------------------------
-        out_ft = torch.einsum("bixy,ixy->bixy", x_ft, self.weights)  #应用可学习的频率滤波器，输出形状为(batch_size, out_channels, H, W)
-
-        h, w = out_ft.shape[2], out_ft.shape[3]  # height and width
-        # print(h, w)
+        h, w = out_ft.shape[2], out_ft.shape[3]
         mask = make_gaussian_mask(h, w, 0.1, device=x.device)
         mask = mask.unsqueeze(0).unsqueeze(0).to(out_ft.dtype)
 
@@ -173,10 +149,7 @@ class SFA_Module(nn.Module):
 
         out = torch.fft.ifft2(out_ft, norm="ortho").real 
 
-        # 6. 空间域卷积 --------------------------------------------------
-        out2 = self.w0(x)  #输出形状为(batch_size, out_channels, H, W)，通过1x1卷积调整维度
-
-        # 7.融合
+        out2 = self.w0(x)
         return self.rate1 * out + self.rate2*out2
     
 def make_gaussian_mask(h, w, cutoff_ratio=0.1, device='cpu'):
@@ -185,8 +158,8 @@ def make_gaussian_mask(h, w, cutoff_ratio=0.1, device='cpu'):
     yy, xx = torch.meshgrid(y, x, indexing='ij')
     sigma = cutoff_ratio * min(h, w)
     gaussian = 1 - torch.exp(-(xx**2 + yy**2) / (2 * sigma**2))
-    gaussian = gaussian / gaussian.max()  # normalize to [0,1]
-    return gaussian  # shape [H, W]
+    gaussian = gaussian / gaussian.max()
+    return gaussian
 
 
 class DepthwiseSeparableConv2d(nn.Module):
@@ -199,7 +172,7 @@ class DepthwiseSeparableConv2d(nn.Module):
             kernel_size=kernel_size,
             stride=stride,
             padding=padding,
-            groups=in_channels,  # groups = in_channels 表示深度卷积
+            groups=in_channels,
             bias=bias
         )
         # 逐点卷积
@@ -211,7 +184,6 @@ class DepthwiseSeparableConv2d(nn.Module):
             padding=0,
             bias=bias
         )
-        # 可选的批量归一化和激活函数
         self.bn = nn.BatchNorm2d(out_channels)
         self.relu = nn.ReLU(inplace=True)
 

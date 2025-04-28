@@ -1,6 +1,6 @@
 from .cifar100 import get_cifar100_dataloaders, get_cifar100_dataloaders_sample
 from .imagenet import get_imagenet_dataloaders, get_imagenet_dataloaders_sample
-from .TinyImageNet import get_tiny_imagenet_dataloaders
+from .TinyImageNet import get_tinyimagenet_dataloader, get_tinyimagenet_dataloader_sample
 from .STL10 import get_STL10_dataloaders
 
 def get_dataset(cfg):
@@ -45,7 +45,7 @@ def get_dataset(cfg):
         num_classes = 1000
     elif cfg.DATASET.TYPE == "tiny_imagenet":
         print('dataset: tiny_imagenet')
-        train_loader, val_loader, num_data = get_tiny_imagenet_dataloaders(
+        train_loader, val_loader, num_data = get_tinyimagenet_dataloader(
             batch_size=cfg.SOLVER.BATCH_SIZE,
             val_batch_size=cfg.DATASET.TEST.BATCH_SIZE,
             num_workers=cfg.DATASET.NUM_WORKERS,
