@@ -46,13 +46,7 @@ def _get_other_mask(logits, target):
 
 def cat_mask(t, mask1, mask2):
     t1 = (t * mask1).sum(dim=1, keepdims=True)
-    print('*'*50, 't1.size()')
-    print(t1.size())
-    print('*'*50)
     t2 = (t * mask2).sum(1, keepdims=True)
-    print('*'*50, 't2.size()')
-    print(t2.size())
-    print('*'*50)
     rt = torch.cat([t1, t2], dim=1)
     return rt
 

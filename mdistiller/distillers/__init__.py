@@ -19,7 +19,7 @@ from .transfer import transfer
 from .SIMkd import SimKD
 from .SIMkd_test_FrequencySmooth import SimKD as SimKD_frequencySmooth
 from .SIMkd_test_FrequencySmooth_test import SimKD as SimKD_FE_gate
-from .SFAKD_final import SFAKD
+from .SFAKD import SFAKD
 
 
 distiller_dict = {

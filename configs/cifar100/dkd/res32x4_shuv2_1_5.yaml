@@ -1,11 +1,11 @@
 EXPERIMENT:
-  NAME: ""
-  TAG: "dkd,res32x4,shuv2"
-  PROJECT: "res32x4_shuv2"
+  NAME: "res32x4,ShuffleV2_1_5,DKD"
+  TAG: "res32x4,ShuffleV2_1_5,DKD"
+  PROJECT: "cifar100_SFAKD"
 DISTILLER:
   TYPE: "DKD"
   TEACHER: "resnet32x4"
-  STUDENT: "ShuffleV2"
+  STUDENT: "ShuffleV2_1_5"
 SOLVER:
   BATCH_SIZE: 64
   EPOCHS: 240
@@ -15,4 +15,6 @@ SOLVER:
   WEIGHT_DECAY: 0.0005
   MOMENTUM: 0.9
   TYPE: "SGD"
-
+LOG:
+  WANDB: false
+  # WANDB: true

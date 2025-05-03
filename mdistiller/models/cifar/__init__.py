@@ -20,7 +20,7 @@ from .resnet import (
     resnet116
 )
 from .resnetv2 import ResNet50, ResNet18, ResNet50_test
-from .wrn import wrn_16_1, wrn_16_2, wrn_16_2_test, wrn_40_1, wrn_40_1_test, wrn_40_2, wrn_40_2_test
+from .wrn import wrn_16_1, wrn_16_2, wrn_16_2_test, wrn_40_1, wrn_40_1_test, wrn_40_2, wrn_40_2_test, wrn_40_4
 from .vgg import vgg19_bn, vgg16_bn, vgg13_bn, vgg13_bn_test, vgg11_bn, vgg8_bn, vgg8_bn_test
 from .mobilenetv2 import mobile_half, mobile_half_test, mobile_half_double
 from .ShuffleNetv1 import ShuffleV1, ShuffleV1_test
@@ -67,6 +67,10 @@ cifar_model_dict = {
     "ResNet110x2": (
         resnet110x2,
         cifar100_model_prefix + "resnet110x2_vanilla/resnet110x2_best.pth",
+    ),
+    "wrn_40_4": (
+        wrn_40_4,
+        cifar100_model_prefix + "wrn_40_4_vanilla/student_best",
     ),
     "wrn_40_2": (
         wrn_40_2,

@@ -14,8 +14,8 @@ from mdistiller.engine.cfg import CFG as cfg
 
 
 
-model_type = "vgg8"
-model_dir = 'download_ckpts/cifar_teachers/student_best'
+model_type = "wrn_40_4"
+model_dir = '/home/zhao/project/CAT-KD/download_ckpts/cifar_teachers/wrn_40_4_vanilla/student_best'
 #"cifar100", "imagenet"
 dataset = "cifar100"
 cfg.DATASET.TYPE = "cifar100"

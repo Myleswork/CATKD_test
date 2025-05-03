@@ -1,13 +1,17 @@
 EXPERIMENT:
-  NAME: ""
-  TAG: "reviewkd,res32x4,res8x4"
-  PROJECT: "cifar100_baselines_CAT"
+  NAME: "reviewkd,wrn_40_2,resnet8x4,ReviewKD"
+  TAG: "reviewkd,wrn_40_2,resnet8x4,ReviewKD"
+  PROJECT: "cifar100_SFAKD"
 DISTILLER:
   TYPE: "REVIEWKD"
-  TEACHER: "resnet32x4"
+  TEACHER: "wrn_40_2"
   STUDENT: "resnet8x4"
 REVIEWKD:
   REVIEWKD_WEIGHT: 5.0
+  SHAPES: [1,8,16,32]
+  IN_CHANNELS: [64,128,256,256]
+  OUT_CHANNELS: [32,64,128,128]
+  # OUT_SHAPES: [1,4,4,8,16]
 SOLVER:
   BATCH_SIZE: 64
   EPOCHS: 240
@@ -17,4 +21,8 @@ SOLVER:
   WEIGHT_DECAY: 0.0005
   MOMENTUM: 0.9
   TYPE: "SGD"
+
+LOG:
+  # WANDB: true
+  WANDB: false
 
