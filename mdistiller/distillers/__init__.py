@@ -20,6 +20,8 @@ from .SIMkd import SimKD
 from .SIMkd_test_FrequencySmooth import SimKD as SimKD_frequencySmooth
 from .SIMkd_test_FrequencySmooth_test import SimKD as SimKD_FE_gate
 from .SFAKD import SFAKD
+from .SFAKD_oblation1 import SFAKD as SFAKD_oblation1
+from .SFAKD_oblation2 import SFAKD as SFAKD_oblation2
 
 
 distiller_dict = {
@@ -44,5 +46,7 @@ distiller_dict = {
     "SIMKD_FS": SimKD_frequencySmooth,
     "SIMKD_FS_GATE": SimKD_FE_gate,
     "SFAKD": SFAKD,
+    "SFAKD_oblation1": SFAKD_oblation1,
+    "SFAKD_oblation2": SFAKD_oblation2,
     'transfer' :transfer,
 }
