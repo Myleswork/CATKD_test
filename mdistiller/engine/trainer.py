@@ -110,17 +110,11 @@ class BaseTrainer(object):
 
         # validate
         test_acc, test_acc_top5, test_loss = validate(self.val_loader, self.distiller)
-        if "FS" in self.cfg.DISTILLER.TYPE:
+        if "SFAKD" in self.cfg.DISTILLER.TYPE:
             if hasattr(self.distiller, "module"):  # 多 GPU 情况
-                fam_module = self.distiller.module.fam
+                fam_module = self.distiller.module.sfa
             else:  # 单 GPU 情况
-                fam_module = self.distiller.fam
-            rate1_value = fam_module.rate1.item()
-            rate2_value = fam_module.rate2.item()
-            if hasattr(fam_module, "latest_gate"):
-                gate_value = fam_module.latest_gate.mean().item()  # 平均门控值（0~1）
-            else:
-                gate_value = -1  # 初始时或无门控值c
+                fam_module = self.distiller.sfa
         # log
         log_dict = OrderedDict(
             {
@@ -131,11 +125,11 @@ class BaseTrainer(object):
                 "test_loss": test_loss,
             }
         )
-        if "FS" in self.cfg.DISTILLER.TYPE:
-            log_dict["rate1"] = fam_module.rate1.item()
-            log_dict["rate2"] = fam_module.rate2.item()
-            if hasattr(fam_module, "latest_gate"):
-                log_dict["gate_mean"] = fam_module.latest_gate.mean().item()
+        if "SFAKD" in self.cfg.DISTILLER.TYPE:
+            if self.cfg.SFAKD.FREQUENCY_PART:
+                log_dict["rate1"] = fam_module.rate1.item()
+            if self.cfg.SFAKD.SPATIAL_PART:
+                log_dict["rate2"] = fam_module.rate2.item()
         self.log(lr, epoch, log_dict)
         # saving checkpoint
         state = {

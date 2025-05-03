@@ -1,0 +1,35 @@
+#256->256
+EXPERIMENT:
+  NAME: "resnet32x4,resnet8x4,oblation4,SFAKD"
+  TAG: "resnet32x4,resnet8x4,oblation4,SFAKD"
+  PROJECT: "cifar100_SFAKD"
+DISTILLER:
+  TYPE: "SFAKD_oblation4"
+  TEACHER: "resnet32x4"
+  STUDENT: "resnet8x4"
+SOLVER:
+  BATCH_SIZE: 64
+  EPOCHS: 240
+  LR: 0.05
+  LR_DECAY_STAGES: [150, 180, 210]
+  LR_DECAY_RATE: 0.1
+  WEIGHT_DECAY: 0.0005
+  MOMENTUM: 0.9
+  TYPE: "SGD"
+
+LOG:
+  # WANDB: false
+  WANDB: true
+
+
+# true: convert the normal CNN to our style
+device: 0
+
+DATASET:
+  AUTO_AUG: False
+  CUT_OUT: False
+
+SFAKD:
+  FREQUENCY_PART: False
+  SPATIAL_PART: True
+
