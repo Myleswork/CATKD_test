@@ -5,7 +5,10 @@ from .mobilenetv2 import MobileNetV2,MobileNetV2_test
 imagenet_model_dict = {
     "ResNet18": resnet18,
     "ResNet34": resnet34,
-    "ResNet50": resnet50,
+    "ResNet50":{
+        resnet50,
+        "/home/zhao/project/CAT-KD/download_ckpts/imagenet_teacher/imagenet_r50_76.358",
+    },
     "ResNet101": resnet101,
     "MobileNetV2": MobileNetV2,
     "ResNet18_test": resnet18_test,

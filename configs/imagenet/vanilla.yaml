@@ -1,0 +1,33 @@
+EXPERIMENT:
+  NAME: "ResNet50_train_1"
+  TAG: "vanilla,ResNet50,ResNet50"
+  PROJECT: "imagenet_baselines_teacher_train"
+DATASET:
+  TYPE: "imagenet"
+  NUM_WORKERS: 32
+  TEST:
+    BATCH_SIZE: 128
+  AUTO_AUG: True
+  CUT_OUT: False
+DISTILLER:
+  TYPE: "NONE"
+  TEACHER: "ResNet50"
+  STUDENT: "ResNet50"
+SOLVER:
+  BATCH_SIZE: 64
+  EPOCHS: 100
+  LR: 0.05
+  LR_DECAY_STAGES: [30, 60, 90]
+  LR_DECAY_RATE: 0.1
+  WEIGHT_DECAY: 0.0001
+  MOMENTUM: 0.9
+  TYPE: "SGD"
+
+LOG:
+  WANDB: false
+  # WANDB: true
+
+device: 0
+
+
+
