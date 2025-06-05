@@ -11,11 +11,14 @@ from mdistiller.dataset import get_dataset
 from mdistiller.dataset.imagenet import get_imagenet_val_loader
 from mdistiller.engine.utils import load_checkpoint, validate
 from mdistiller.engine.cfg import CFG as cfg
+from thop import profile
+import logging
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-
-model_type = "vgg13"
-model_dir = '/home/liu/HDD2T/code/CATKD_test/download_ckpts/cifar_teachers/vgg13_vanilla/ckpt_epoch_240.pth'
+model_type = "wrn_40_4"
+model_dir = '/home/zhao/project/CAT-KD/download_ckpts/cifar_teachers/wrn_40_4_vanilla/student_best'
 #"cifar100", "imagenet"
 dataset = "cifar100"
 cfg.DATASET.TYPE = "cifar100"
@@ -44,5 +47,13 @@ elif dataset == "cifar100":
 model.eval()
 model = Vanilla(model)
 model = model.cuda()
+
+input_size = (1, 3, 32, 32) if dataset == "cifar100" else (1, 3, 224, 224)
+input = torch.randn(input_size).cuda()
+flops, params = profile(model, inputs=(input,))
+
+logger.info(f"Number of model parameters: {params/1e6:.2f}M")
+logger.info(f"FLOPs: {flops/1e9:.2f}G")
+
 model = torch.nn.DataParallel(model)
 test_acc, test_acc_top5, test_loss = validate(val_loader, model)

@@ -1,16 +1,16 @@
-#256->256
+#704->256
 EXPERIMENT:
-  NAME: "resnet32x4,resnet8x4,oblation2,02"
-  TAG: "resnet32x4,resnet8x4,oblation2,02"
+  NAME: "resnet32x4,ShuffleV2_1_5,oblation1_1"
+  TAG: "resnet32x4,ShuffleV2_1_5,oblation1_1"
   PROJECT: "cifar100_SFAKD"
 DISTILLER:
-  TYPE: "SFAKD_oblation2"
+  TYPE: "SFAKD_oblation1_1"
   TEACHER: "resnet32x4"
-  STUDENT: "resnet8x4"
+  STUDENT: "ShuffleV2_1_5"
 SOLVER:
   BATCH_SIZE: 64
   EPOCHS: 240
-  LR: 0.05
+  LR: 0.01
   LR_DECAY_STAGES: [150, 180, 210]
   LR_DECAY_RATE: 0.1
   WEIGHT_DECAY: 0.0005
@@ -28,7 +28,4 @@ device: 0
 DATASET:
   AUTO_AUG: False
   CUT_OUT: False
-
-SFAKD:
-  CUT_OFF: 0.2
 

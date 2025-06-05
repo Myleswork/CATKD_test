@@ -1,7 +1,7 @@
 #256->256
 EXPERIMENT:
-  NAME: "resnet32x4,resnet8x4,oblation2,02"
-  TAG: "resnet32x4,resnet8x4,oblation2,02"
+  NAME: "resnet32x4,resnet8x4,oblation2,05"
+  TAG: "resnet32x4,resnet8x4,oblation2,05"
   PROJECT: "cifar100_SFAKD"
 DISTILLER:
   TYPE: "SFAKD_oblation2"
@@ -30,5 +30,5 @@ DATASET:
   CUT_OUT: False
 
 SFAKD:
-  CUT_OFF: 0.2
+  CUT_OFF: 0.5
 

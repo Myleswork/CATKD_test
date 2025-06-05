@@ -23,7 +23,7 @@ LOG:
 
 
 # true: convert the normal CNN to our style
-device: 1
+device: 0
 
 DATASET:
   AUTO_AUG: False

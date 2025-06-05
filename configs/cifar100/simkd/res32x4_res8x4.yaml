@@ -1,7 +1,7 @@
 EXPERIMENT:
   NAME: "resnet32x4,resnet8x4,simkd_baseline"
-  TAG: "resnet32x4,resnet8x4,3090ti,higher_res,no_aug"
-  PROJECT: "cifar100_baselines_simkd"
+  TAG: "resnet32x4,resnet8x4,3090ti"
+  PROJECT: "cifar100_SFAKD"
 DISTILLER:
   TYPE: "SIMKD"
   TEACHER: "resnet32x4"
@@ -22,7 +22,7 @@ LOG:
 
 
 # true: convert the normal CNN to our style
-device: 1
+device: 0
 
 DATASET:
   AUTO_AUG: False

@@ -1,4 +1,4 @@
-#针对频率域和空间域的融合进行的消融实验,残差
+#消融实验1：dw的中间通道数由(s_n+t_n)//2改为(t_n)//factor
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -11,19 +11,18 @@ class SFAKD(Distiller):
         self.feat_s_dim = s_n
         self.feat_t_dim = t_n
         self.t_cls = t_cls
-        self.frequency_part = cfg.SFAKD.FREQUENCY_PART
-        self.spatial_part = cfg.SFAKD.SPATIAL_PART
 
         self.mid_channel = (s_n + t_n) // 2
+        # self.mid_channel = t_n // 2
         
         self.transfer = nn.Sequential(
             nn.Conv2d(self.feat_s_dim, self.mid_channel, kernel_size=1, padding=0, stride=1, bias=False),
             nn.BatchNorm2d(self.mid_channel),
             nn.ReLU(inplace=True),
-            # nn.Conv2d(self.mid_channel, self.mid_channel, kernel_size=3, padding=1, stride=1, bias=False, groups=1),
-            # nn.BatchNorm2d(self.mid_channel),
-            # nn.ReLU(inplace=True),
-            DepthwiseSeparableConv2d(self.mid_channel, self.mid_channel, kernel_size=3, padding=1, stride=1, bias=False),
+            nn.Conv2d(self.mid_channel, self.mid_channel, kernel_size=3, padding=1, stride=1, bias=False, groups=1),
+            nn.BatchNorm2d(self.mid_channel),
+            nn.ReLU(inplace=True),
+            # DepthwiseSeparableConv2d(self.mid_channel, self.mid_channel, kernel_size=3, padding=1, stride=1, bias=False),
             nn.Conv2d(self.mid_channel, self.feat_t_dim, kernel_size=1, padding=0, stride=1, bias=False),
             nn.BatchNorm2d(self.feat_t_dim),
             nn.ReLU(inplace=True),
@@ -46,9 +45,7 @@ class SFAKD(Distiller):
             in_channels = self.feat_s_dim,
             out_channels = self.feat_s_dim,
             # shapes = 8
-            shapes = shape,
-            frequency_part=self.frequency_part,
-            spatial_part=self.spatial_part
+            shapes = shape
         )
         
     def get_learnable_parameters(self):
@@ -126,15 +123,13 @@ class SFAKD(Distiller):
     
 
 class SFA_Module(nn.Module):
-    def __init__(self, in_channels, out_channels, shapes, frequency_part, spatial_part):
+    def __init__(self, in_channels, out_channels, shapes):
         super(SFA_Module, self).__init__()
 
         """
         feat_s_shape, feat_t_shape
         2D Fourier layer. It does FFT, linear transform, and Inverse FFT.    
         """
-        self.frequency_part = frequency_part
-        self.spatial_part = spatial_part
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.shapes = shapes
@@ -157,37 +152,29 @@ class SFA_Module(nn.Module):
 
 
     def forward(self, x):
-        if self.frequency_part == True:
-            # 1. 傅里叶变换 --------------------------------------------------
-            x_ft = torch.fft.fft2(x, norm="ortho")  #对输入进行二维FFT(正交归一化)，形状为(batch_size, in_channels, H, W)
+        # 1. 傅里叶变换 --------------------------------------------------
+        x_ft = torch.fft.fft2(x, norm="ortho")  #对输入进行二维FFT(正交归一化)，形状为(batch_size, in_channels, H, W)
 
-            # 2. 频域卷积 ---------------------------------------------------
-            complex_weight = torch.complex(self.real_weight, self.imag_weight)
-            out_ft = torch.einsum("bixy,ixy->bixy", x_ft, complex_weight)  #应用可学习的频率滤波器，输出形状为(batch_size, out_channels, H, W)
+        # 2. 频域卷积 ---------------------------------------------------
+        complex_weight = torch.complex(self.real_weight, self.imag_weight)
+        out_ft = torch.einsum("bixy,ixy->bixy", x_ft, complex_weight)  #应用可学习的频率滤波器，输出形状为(batch_size, out_channels, H, W)
 
-            h, w = out_ft.shape[2], out_ft.shape[3]  # height and width
-            # print(h, w)
-            mask = make_gaussian_mask(h, w, 0.1)
-            mask = mask.unsqueeze(0).unsqueeze(0).to(out_ft.dtype)
+        h, w = out_ft.shape[2], out_ft.shape[3]  # height and width
+        # print(h, w)
+        mask = make_gaussian_mask(h, w, 0.1)
+        mask = mask.unsqueeze(0).unsqueeze(0).to(out_ft.dtype)
 
-            out_ft = torch.fft.fftshift(out_ft, dim=(-2, -1))  
-            out_ft = out_ft * mask 
-            out_ft = torch.fft.ifftshift(out_ft, dim=(-2, -1))
+        out_ft = torch.fft.fftshift(out_ft, dim=(-2, -1))  
+        out_ft = out_ft * mask 
+        out_ft = torch.fft.ifftshift(out_ft, dim=(-2, -1))
 
-            out = torch.fft.ifft2(out_ft, norm="ortho").real  #对频域特征进行逆FFT，得到复数形式的输出
+        out = torch.fft.ifft2(out_ft, norm="ortho").real  #对频域特征进行逆FFT，得到复数形式的输出
 
-        if self.spatial_part == True:
-            # 6. 空间域卷积 --------------------------------------------------
-            out2 = self.w0(x)  #输出形状为(batch_size, out_channels, H, W)，通过1x1卷积调整维度
+        # 6. 空间域卷积 --------------------------------------------------
+        out2 = self.w0(x)  #输出形状为(batch_size, out_channels, H, W)，通过1x1卷积调整维度
 
         # 7.融合
-        if self.frequency_part == True and self.spatial_part == True:
-            return self.rate1 * out + self.rate2*out2
-        elif self.frequency_part == True:
-            return self.rate1 * out
-        else:
-            return self.rate2 * out2
-        # return self.rate1 * out + self.rate2*out2
+        return self.rate1 * out + self.rate2*out2
 
 def make_gaussian_mask(h, w, cutoff_ratio, device='cuda'):
         y = torch.arange(h, device=device) - h // 2

@@ -3,7 +3,7 @@ EXPERIMENT:
   TAG: "wrn40_2,resnet8x4,FS,ori_wrn_40_2"
   PROJECT: "cifar100_baselines_simkd"
 DISTILLER:
-  TYPE: "SIMKD_FS"
+  TYPE: "SFAKD"
   TEACHER: "wrn_40_2"
   STUDENT: "resnet8x4"
 SOLVER:

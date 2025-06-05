@@ -1,7 +1,7 @@
 #256->256
 EXPERIMENT:
-  NAME: "resnet32x4,resnet8x4,oblation4,SFAKD"
-  TAG: "resnet32x4,resnet8x4,oblation4,SFAKD"
+  NAME: "resnet32x4,resnet8x4,oblation4,SFAKD,f0s1"
+  TAG: "resnet32x4,resnet8x4,oblation4,SFAKD,f0s1"
   PROJECT: "cifar100_SFAKD"
 DISTILLER:
   TYPE: "SFAKD_oblation4"

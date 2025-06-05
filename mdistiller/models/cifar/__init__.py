@@ -55,6 +55,7 @@ cifar_model_dict = {
     "resnet32x4": (
         resnet32x4,
         cifar100_model_prefix + "resnet32x4_vanilla/ckpt_epoch_240.pth",
+        # cifar100_model_prefix + "resnet32x4_vanilla/student_best_79.5",
     ),
     "ResNet50": (
         ResNet50,

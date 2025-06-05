@@ -1,12 +1,12 @@
-#256->256
+#512->512
 EXPERIMENT:
-  NAME: "resnet32x4,resnet8x4,oblation2,02"
-  TAG: "resnet32x4,resnet8x4,oblation2,02"
+  NAME: "vgg13,vgg8,oblation2"
+  TAG: "vgg13,vgg8,oblation2"
   PROJECT: "cifar100_SFAKD"
 DISTILLER:
   TYPE: "SFAKD_oblation2"
-  TEACHER: "resnet32x4"
-  STUDENT: "resnet8x4"
+  TEACHER: "vgg13"
+  STUDENT: "vgg8"
 SOLVER:
   BATCH_SIZE: 64
   EPOCHS: 240
@@ -21,8 +21,6 @@ LOG:
   # WANDB: false
   WANDB: true
 
-
-# true: convert the normal CNN to our style
 device: 0
 
 DATASET:
@@ -30,5 +28,4 @@ DATASET:
   CUT_OUT: False
 
 SFAKD:
-  CUT_OFF: 0.2
-
+  CUT_OFF: 0.05

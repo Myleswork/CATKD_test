@@ -132,8 +132,8 @@ class SFA_Module(nn.Module):
         self.out_channels = out_channels
         self.shapes = shapes
       #  print(self.shapes)
-        self.rate1 = torch.nn.Parameter(torch.tensor(0.5))  #频域权重
-        self.rate2 = torch.nn.Parameter(torch.tensor(0.5))  #空间域权重
+        self.rate1 = torch.nn.Parameter(torch.tensor(1.0))  #频域权重
+        self.rate2 = torch.nn.Parameter(torch.tensor(0.2))  #空间域权重
        # self.out_channels = feat_t_shape[1]
         self.scale = (1 / (self.in_channels * self.out_channels))  #初始化权重矩阵的缩放系数
         # weights = nn.Parameter(

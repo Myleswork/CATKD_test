@@ -3,8 +3,8 @@ EXPERIMENT:
   TAG: "res32x4_shuv2"
   PROJECT: "cifar100_baselines_CAT"
 DISTILLER:
-  # TYPE: "CAT_KD"
-  TYPE: "CAT_hcl_KD"
+  TYPE: "CAT_KD"
+  # TYPE: "CAT_hcl_KD"
   TEACHER: "resnet32x4"
   STUDENT: "ShuffleV2"
 SOLVER:
@@ -16,6 +16,9 @@ SOLVER:
   WEIGHT_DECAY: 0.0005
   MOMENTUM: 0.9
   TYPE: "SGD"
+LOG:
+  WANDB: false
+  # WANDB: true
 
 CAT_KD:
   LOSS:

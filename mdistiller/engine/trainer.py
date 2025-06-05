@@ -88,6 +88,12 @@ class BaseTrainer(object):
         with open(os.path.join(self.log_path, "worklog.txt"), "a") as writer:
             writer.write("best_acc\t" + "{:.2f}".format(float(self.best_acc)))
 
+    def save_sfa_weights(self, epoch):
+        if self.local_rank == 0:
+            sfa_state = {
+                
+            }
+
     def train_epoch(self, epoch):
         lr = adjust_learning_rate(epoch, self.cfg, self.optimizer)
         train_meters = {

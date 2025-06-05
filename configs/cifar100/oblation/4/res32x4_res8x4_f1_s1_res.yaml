@@ -1,10 +1,10 @@
 #256->256
 EXPERIMENT:
-  NAME: "resnet32x4,resnet8x4,oblation4,SFAKD"
-  TAG: "resnet32x4,resnet8x4,oblation4,SFAKD"
+  NAME: "resnet32x4,resnet8x4,oblation4,SFAKD,f1s1_res"
+  TAG: "resnet32x4,resnet8x4,oblation4,SFAKD,f1s1_res"
   PROJECT: "cifar100_SFAKD"
 DISTILLER:
-  TYPE: "SFAKD_oblation4"
+  TYPE: "SFAKD_oblation4_1"
   TEACHER: "resnet32x4"
   STUDENT: "resnet8x4"
 SOLVER:

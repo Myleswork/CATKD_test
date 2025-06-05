@@ -163,7 +163,9 @@ def main(cfg, resume, opts):
         #         model_dict.update(pretrained_dict) 
         #         tnet_test.load_state_dict(model_dict)
         #         model_teacher=tnet_test
-                
+        #     distiller = distiller_dict[cfg.DISTILLER.TYPE](
+        #         model_student, model_teacher, cfg
+        #     )
         #     if cfg.DATASET.TYPE == "imagenet":
         #         model_student = model_dict_type[cfg.DISTILLER.STUDENT+'_test'](pretrained=False)
         #     else:
